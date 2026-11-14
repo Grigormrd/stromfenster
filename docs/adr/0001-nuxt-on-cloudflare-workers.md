@@ -33,3 +33,7 @@ Run the whole app as **one Cloudflare Worker**:
 - **Writes have a budget.** A week of 15-minute values for all series is roughly 10,000 rows. Rewriting that on every import would exceed 100,000 rows per day, so the import only writes rows that are new or have changed.
 - **Fallback.** If the CPU limit cannot be met, the app moves to Vercel with incremental static regeneration, and the import needs a different scheduler. The storage interface keeps that move small.
 - **Vendor lock-in** is limited to the storage adapter and the scheduler binding. Pages, components and the domain logic are plain Nuxt and TypeScript.
+
+## Addendum: how the Cron Trigger reaches the task (2026-11-14)
+
+The Cron Trigger is declared in `wrangler.jsonc` and connected to the import task through Nitro's `cloudflare:scheduled` hook, not through `scheduledTasks`. Only the hook passes on the time a run was scheduled for, which the import uses as its clock ([ADR 3](0003-incremental-import-into-d1.md)).

@@ -12,6 +12,16 @@ export default defineConfig({
           environment: "node",
         },
       },
+      {
+        // The built Worker in workerd with a real D1 database. Needs a build.
+        test: {
+          name: "worker",
+          include: ["test/worker/**/*.test.ts"],
+          environment: "node",
+          testTimeout: 60_000,
+          hookTimeout: 120_000,
+        },
+      },
       // Components and composables inside a Nuxt runtime.
       await defineVitestProject({
         test: {

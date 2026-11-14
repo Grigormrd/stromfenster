@@ -1,0 +1,142 @@
+{
+  "recordedAt": "2026-11-14T11:00:29.000Z",
+  "source": "https://www.smard.de/app/chart_data",
+  "requests": [
+    {
+      "url": "https://www.smard.de/app/chart_data/4169/DE-LU/4169_DE-LU_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4169/DE-LU/4169_DE-LU_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4066/DE/4066_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4066/DE/4066_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1226/DE/1226_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1226/DE/1226_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1225/DE/1225_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1225/DE/1225_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4067/DE/4067_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4067/DE/4067_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4068/DE/4068_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4068/DE/4068_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1228/DE/1228_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1228/DE/1228_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1223/DE/1223_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1223/DE/1223_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4069/DE/4069_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4069/DE/4069_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4071/DE/4071_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4071/DE/4071_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4070/DE/4070_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4070/DE/4070_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1227/DE/1227_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/1227/DE/1227_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/410/DE/410_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/410/DE/410_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/411/DE/411_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/411/DE/411_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/123/DE/123_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/123/DE/123_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/3791/DE/3791_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/3791/DE/3791_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/125/DE/125_DE_quarterhour_1794178800000.json",
+      "result": "stored"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/125/DE/125_DE_quarterhour_1794783600000.json",
+      "result": "missing"
+    }
+  ]
+}
