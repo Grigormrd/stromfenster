@@ -14,12 +14,14 @@ import {
 } from "../../shared/utils/import-window.ts";
 import { RESOLUTION_SECONDS, SERIES_IDS } from "../../shared/utils/series.ts";
 import type { SeriesId } from "../../shared/utils/series.ts";
+import { seriesForRun } from "../../worker/src/schedule.ts";
 import { readWeekFixture, recordedAt } from "../fixtures/smard.ts";
 import type { SmardServer } from "./smard-server.ts";
 import { startSmardServer } from "./smard-server.ts";
 
 const WRANGLER_CONFIG = join(import.meta.dirname, "..", "..", "worker", "wrangler.jsonc");
-const CRON = "*/15 * * * *";
+const CRON = "* * * * *";
+const MINUTE = 60;
 
 // Two recordings of the same week, made some time apart.
 const FIRST = "snapshot-a";
@@ -27,6 +29,9 @@ const LATER = "snapshot-b";
 const firstAt = recordedAt(FIRST);
 const laterAt = recordedAt(LATER);
 const week = berlinDayStart("2026-11-09");
+
+/** One round: a run per minute until every series has had its turn. */
+const round = (start: number) => SERIES_IDS.map((_id, index) => start + index * MINUTE);
 
 interface DayResponse {
   date: string;
@@ -39,6 +44,7 @@ interface DayResponse {
 interface StatusResponse {
   lastImport: {
     ranAt: string;
+    series: SeriesId[];
     status: "ok" | "partial" | "failed";
     inserted: number;
     updated: number;
@@ -46,26 +52,56 @@ interface StatusResponse {
     rowsWritten: number;
     failures: Record<string, string>;
   } | null;
-  recent: { hours: number; runs: number; longestGapMinutes: number | null };
+  recent: {
+    hours: number;
+    runs: number;
+    ok: number;
+    partial: number;
+    failed: number;
+    longestGapMinutes: number | null;
+    inserted: number;
+    updated: number;
+    rowsWritten: number;
+  } | null;
   latest: Record<SeriesId, string | null>;
 }
 
-/** What a recording holds for the window of an import at `now`, read straight from the files. */
-function recordedPoints(recording: string, now: number): Map<string, number> {
+interface RunRow {
+  ran_at: number;
+  series: string;
+  status: string;
+  inserted: number;
+  updated: number;
+  rows_written: number;
+  failures: string;
+}
+
+/** What a recording holds for one series in the window of an import at `now`, read straight from the file. */
+function recordedSeries(recording: string, id: SeriesId, now: number): Map<string, number> {
   const points = new Map<string, number>();
-  for (const id of SERIES_IDS) {
-    const { series } = readWeekFixture(recording, id, week) as {
-      series: [number, number | null][];
-    };
-    for (const [milliseconds, value] of series) {
-      const start = milliseconds / 1000;
-      const inWindow =
-        start >= now - IMPORT_LOOKBACK_SECONDS && start < now + IMPORT_LOOKAHEAD_SECONDS;
-      if (value !== null && inWindow) points.set(`${id}:${start}`, value);
+  const { series } = readWeekFixture(recording, id, week) as { series: [number, number | null][] };
+  for (const [milliseconds, value] of series) {
+    const start = milliseconds / 1000;
+    const inWindow =
+      start >= now - IMPORT_LOOKBACK_SECONDS && start < now + IMPORT_LOOKAHEAD_SECONDS;
+    if (value !== null && inWindow) points.set(`${id}:${start}`, value);
+  }
+  return points;
+}
+
+/** What a full round starting at `start` should have imported from a recording. */
+function recordedRound(recording: string, start: number): Map<string, number> {
+  const points = new Map<string, number>();
+  for (const now of round(start)) {
+    for (const id of seriesForRun(now)) {
+      for (const [key, value] of recordedSeries(recording, id, now)) points.set(key, value);
     }
   }
   return points;
 }
+
+const sum = (rows: RunRow[], pick: (row: RunRow) => number) =>
+  rows.reduce((total, row) => total + pick(row), 0);
 
 describe("data pipeline in the Workers runtime", () => {
   let smard: SmardServer;
@@ -77,6 +113,21 @@ describe("data pipeline in the Workers runtime", () => {
   const status = () => getJson<StatusResponse>("/api/status");
   const runImportAt = (now: number) =>
     worker().scheduled({ cron: CRON, scheduledTime: new Date(now * 1000) });
+
+  /** Runs one import per minute for a whole round and returns the rows it logged. */
+  async function runRound(start: number): Promise<RunRow[]> {
+    for (const now of round(start)) await runImportAt(now);
+    return (await loggedRuns()).slice(-SERIES_IDS.length);
+  }
+
+  async function loggedRuns(): Promise<RunRow[]> {
+    const { results } = await db
+      .prepare(
+        "SELECT ran_at, series, status, inserted, updated, rows_written, failures FROM import_runs ORDER BY id",
+      )
+      .all<RunRow>();
+    return results;
+  }
 
   async function storedPoints(): Promise<Map<string, number>> {
     const { results } = await db
@@ -104,7 +155,7 @@ describe("data pipeline in the Workers runtime", () => {
     const { lastImport, recent, latest } = await status();
 
     expect(lastImport).toBeNull();
-    expect(recent).toMatchObject({ hours: 48, runs: 0, longestGapMinutes: null });
+    expect(recent).toBeNull();
     expect(Object.keys(latest).sort()).toEqual([...SERIES_IDS].sort());
     expect(Object.values(latest).every((value) => value === null)).toBe(true);
   });
@@ -121,14 +172,17 @@ describe("data pipeline in the Workers runtime", () => {
     });
   });
 
-  it("imports a recorded snapshot when the Cron Trigger fires", async () => {
+  it("imports one series when the Cron Trigger fires", async () => {
+    const [due] = seriesForRun(firstAt);
+    const expected = recordedSeries(FIRST, due!, firstAt);
+
     const result = await runImportAt(firstAt);
     const { lastImport } = await status();
-    const expected = recordedPoints(FIRST, firstAt);
 
     expect(result.outcome).toBe("ok");
     expect(lastImport).toMatchObject({
       ranAt: new Date(firstAt * 1000).toISOString(),
+      series: [due],
       status: "ok",
       inserted: expected.size,
       updated: 0,
@@ -136,20 +190,29 @@ describe("data pipeline in the Workers runtime", () => {
       rowsWritten: expected.size,
       failures: {},
     });
-    // One file per series for this week, and one for next week that SMARD
-    // does not have yet.
-    expect(smard.requests.filter((request) => request.status === 200)).toHaveLength(17);
-    expect(smard.requests.filter((request) => request.status === 404)).toHaveLength(17);
+    expect(expected.size).toBeGreaterThan(100);
+    expect(await storedPoints()).toEqual(expected);
+    // This week's file, and next week's, which SMARD does not have yet.
+    expect(smard.requests.map((request) => request.status).sort()).toEqual([200, 404]);
   });
 
-  it("stores exactly what SMARD sent for the import window", async () => {
-    expect(await storedPoints()).toEqual(recordedPoints(FIRST, firstAt));
+  it("has imported every series after one round", async () => {
+    // The first minute of the round already ran in the test above.
+    for (const now of round(firstAt).slice(1)) await runImportAt(now);
+    const runs = await loggedRuns();
+
+    expect(runs).toHaveLength(SERIES_IDS.length);
+    expect(runs.every((run) => run.status === "ok")).toBe(true);
+    expect(runs.flatMap((run) => JSON.parse(run.series) as string[]).sort()).toEqual(
+      [...SERIES_IDS].sort(),
+    );
+    expect(await storedPoints()).toEqual(recordedRound(FIRST, firstAt));
   });
 
   it("serves the day on its quarter-hour grid", async () => {
     const today = berlinDateKey(firstAt);
     const day = await getJson<DayResponse>(`/api/days/${today}`);
-    const recorded = recordedPoints(FIRST, firstAt);
+    const recorded = recordedRound(FIRST, firstAt);
     const dayStart = berlinDayStart(today);
     const slotNow = Math.floor((firstAt - dayStart) / RESOLUTION_SECONDS);
 
@@ -168,7 +231,7 @@ describe("data pipeline in the Workers runtime", () => {
 
   it("reports the newest value of each series", async () => {
     const { latest } = await status();
-    const recorded = recordedPoints(FIRST, firstAt);
+    const recorded = recordedRound(FIRST, firstAt);
     const newest = (id: SeriesId) =>
       Math.max(
         ...[...recorded.keys()]
@@ -182,21 +245,22 @@ describe("data pipeline in the Workers runtime", () => {
   });
 
   it("writes nothing when SMARD has not changed", async () => {
-    await runImportAt(firstAt);
+    const runs = await runRound(firstAt);
 
-    const { lastImport } = await status();
-    expect(lastImport).toMatchObject({ status: "ok", inserted: 0, updated: 0, rowsWritten: 0 });
-    expect(await storedPoints()).toEqual(recordedPoints(FIRST, firstAt));
+    expect(runs.every((run) => run.status === "ok")).toBe(true);
+    expect(sum(runs, (run) => run.rows_written)).toBe(0);
+    expect(await storedPoints()).toEqual(recordedRound(FIRST, firstAt));
   });
 
   it("writes only new and corrected quarter hours from a later snapshot", async () => {
     const before = await storedPoints();
-    const later = recordedPoints(LATER, laterAt);
+    const later = recordedRound(LATER, laterAt);
     smard.use(LATER);
 
-    await runImportAt(laterAt);
-    const { lastImport } = await status();
+    const runs = await runRound(laterAt);
     const after = await storedPoints();
+    const inserted = sum(runs, (run) => run.inserted);
+    const updated = sum(runs, (run) => run.updated);
 
     // The database now agrees with the later snapshot wherever the import looked ...
     for (const [key, value] of later) expect(after.get(key)).toBe(value);
@@ -205,13 +269,13 @@ describe("data pipeline in the Workers runtime", () => {
       if (!later.has(key)) expect(after.get(key)).toBe(value);
     }
     // It got there by writing the difference, not the whole window.
-    expect(lastImport?.status).toBe("ok");
-    expect(lastImport!.inserted).toBe(after.size - before.size);
-    expect(lastImport!.inserted).toBeGreaterThan(0);
+    expect(runs.every((run) => run.status === "ok")).toBe(true);
+    expect(inserted).toBe(after.size - before.size);
+    expect(inserted).toBeGreaterThan(0);
     // SMARD had corrected values it published earlier; those are overwritten.
-    expect(lastImport!.updated).toBeGreaterThan(0);
-    expect(lastImport!.rowsWritten).toBe(lastImport!.inserted + lastImport!.updated);
-    expect(lastImport!.rowsWritten).toBeLessThan(later.size / 10);
+    expect(updated).toBeGreaterThan(0);
+    expect(sum(runs, (run) => run.rows_written)).toBe(inserted + updated);
+    expect(inserted + updated).toBeLessThan(later.size / 10);
   });
 
   it("keeps importing the other series when one fails", async () => {
@@ -219,28 +283,56 @@ describe("data pipeline in the Workers runtime", () => {
     smard.failFor([4068]);
     const before = await storedPoints();
 
-    const result = await runImportAt(laterAt);
-    const { lastImport } = await status();
+    const runs = await runRound(laterAt);
+    const failed = runs.filter((run) => run.status === "failed");
 
-    expect(result.outcome).toBe("ok");
-    expect(lastImport).toMatchObject({ status: "partial", rowsWritten: 0 });
-    expect(Object.keys(lastImport!.failures)).toEqual(["generation_solar"]);
-    expect(lastImport!.failures.generation_solar).toContain("HTTP 500");
+    expect(runs.filter((run) => run.status === "ok")).toHaveLength(SERIES_IDS.length - 1);
+    expect(failed).toHaveLength(1);
+    expect(JSON.parse(failed[0]!.series)).toEqual(["generation_solar"]);
+    expect(JSON.parse(failed[0]!.failures).generation_solar).toContain("HTTP 500");
     expect(await storedPoints()).toEqual(before);
   });
 
-  it("records a failed run when SMARD cannot be reached at all", async () => {
+  it("records a failed run when SMARD cannot be reached", async () => {
     smard.reset();
     smard.failFor("all");
     const before = await storedPoints();
+    // The minute after the last round.
+    const next = laterAt + SERIES_IDS.length * MINUTE;
 
-    await runImportAt(laterAt);
+    await runImportAt(next);
     const { lastImport } = await status();
 
+    expect(lastImport?.ranAt).toBe(new Date(next * 1000).toISOString());
     expect(lastImport?.status).toBe("failed");
-    expect(Object.keys(lastImport!.failures).sort()).toEqual([...SERIES_IDS].sort());
+    expect(Object.keys(lastImport!.failures)).toEqual(lastImport!.series);
     expect(await storedPoints()).toEqual(before);
     smard.reset();
+  });
+
+  it("sums up the runs of the 48 hours before the last one", async () => {
+    const runs = await loggedRuns();
+    const times = runs.map((run) => run.ran_at).sort((a, b) => a - b);
+    const longestGap = Math.max(...times.slice(1).map((time, index) => time - times[index]!));
+
+    const { recent } = await status();
+
+    expect(recent).toMatchObject({
+      hours: 48,
+      runs: runs.length,
+      ok: runs.filter((run) => run.status === "ok").length,
+      partial: 0,
+      failed: runs.filter((run) => run.status === "failed").length,
+      longestGapMinutes: Math.round(longestGap / MINUTE),
+      inserted: sum(runs, (run) => run.inserted),
+      updated: sum(runs, (run) => run.updated),
+      rowsWritten: sum(runs, (run) => run.rows_written),
+    });
+    // Two rounds for the first recording, two for the later one, one failed run.
+    expect(recent!.runs).toBe(4 * SERIES_IDS.length + 1);
+    expect(recent!.failed).toBe(2);
+    // Between the rounds of the two recordings; within a round it is a minute.
+    expect(recent!.longestGapMinutes).toBeGreaterThan(1);
   });
 
   it("has 92 and 100 quarter hours on the days the clocks change", async () => {

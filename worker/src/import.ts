@@ -1,6 +1,6 @@
 import { importWindow } from "../../shared/utils/import-window.ts";
 import type { Point, SeriesId } from "../../shared/utils/series.ts";
-import { SERIES, SERIES_IDS } from "../../shared/utils/series.ts";
+import { SERIES } from "../../shared/utils/series.ts";
 import type { FetchJson } from "./smard.ts";
 import { fetchSmardWeek } from "./smard.ts";
 import type { ImportRun, SeriesStore } from "./store.ts";
@@ -12,6 +12,8 @@ export interface ImportOptions {
   baseUrl: string;
   /** The moment the import runs for, in epoch seconds. */
   now: number;
+  /** The series this run imports. */
+  series: readonly SeriesId[];
 }
 
 function message(error: unknown): string {
@@ -19,7 +21,7 @@ function message(error: unknown): string {
 }
 
 /**
- * Brings the stored series up to date with SMARD.
+ * Brings the given series up to date with SMARD.
  *
  * Looks at a window around `now`, compares what SMARD has with what is stored,
  * and writes only quarter hours that are new or whose value changed. A series
@@ -27,7 +29,7 @@ function message(error: unknown): string {
  * when nothing could be imported.
  */
 export async function runImport(options: ImportOptions): Promise<ImportRun> {
-  const { store, fetchJson, baseUrl, now } = options;
+  const { store, fetchJson, baseUrl, now, series } = options;
   const startedAt = Date.now();
   const window = importWindow(now);
   const failures: ImportRun["failures"] = {};
@@ -35,7 +37,7 @@ export async function runImport(options: ImportOptions): Promise<ImportRun> {
   let updated = 0;
 
   const fetched = await Promise.all(
-    SERIES_IDS.map(async (id): Promise<Point[] | null> => {
+    series.map(async (id): Promise<Point[] | null> => {
       try {
         const weeks = await Promise.all(
           window.weekStarts.map((weekStart) =>
@@ -53,7 +55,7 @@ export async function runImport(options: ImportOptions): Promise<ImportRun> {
     }),
   );
 
-  const imported = SERIES_IDS.filter((_id, index) => fetched[index] !== null);
+  const imported = series.filter((_id, index) => fetched[index] !== null);
 
   try {
     const stored = new Map<string, number>();
@@ -90,6 +92,7 @@ export async function runImport(options: ImportOptions): Promise<ImportRun> {
   const run: ImportRun = {
     ranAt: now,
     durationMs: Date.now() - startedAt,
+    series: [...series],
     status,
     inserted,
     updated,

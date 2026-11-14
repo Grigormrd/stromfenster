@@ -4,7 +4,7 @@
 
 **Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 1 (data pipeline). The import from SMARD runs every 15 minutes on Cloudflare and fills the database behind the API. The website on Vercel is still a placeholder; there are no charts yet. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 1 (data pipeline). The import from SMARD runs every minute on Cloudflare, one series at a time, and fills the database behind the API. The website on Vercel is still a placeholder; there are no charts yet. See the [roadmap](docs/ROADMAP.md).
 
 ## Planned features
 
@@ -32,7 +32,7 @@ The pipeline exists and is deployed; the dashboard pages are planned.
 flowchart LR
   SMARD["SMARD<br/>prices · generation · load · forecasts"]
   subgraph Cloudflare
-    Cron["Cron Trigger<br/>every 15 minutes"] --> Worker["Pipeline Worker<br/>import · JSON API"]
+    Cron["Cron Trigger<br/>every minute, one series per run"] --> Worker["Pipeline Worker<br/>import · JSON API"]
     Worker --> DB[("D1<br/>time series")]
   end
   subgraph Vercel
@@ -45,7 +45,8 @@ flowchart LR
   Shared -.-> Worker
 ```
 
-- **The import is independent of visitors.** Every 15 minutes a Cron Trigger starts the import. It reads the current files from SMARD, compares them with the database and writes only quarter hours that are new or were corrected ([ADR 3](docs/adr/0003-incremental-import-into-d1.md)).
+- **The import is independent of visitors.** A Cron Trigger starts it every minute. Each run reads the current file of one series from SMARD, compares it with the database and writes only quarter hours that are new or were corrected ([ADR 3](docs/adr/0003-incremental-import-into-d1.md)).
+- **One series per run.** Importing all 17 series at once took about four times the CPU time a Worker on the free plan may use per invocation, so they take turns; each series is imported every 17 minutes ([ADR 5](docs/adr/0005-one-series-per-run.md)).
 - **The pipeline and the pages are split along their CPU cost.** A Cloudflare Worker on the free plan has 10 ms of CPU time per invocation. The import and the API fit a small Worker; starting Nuxt in the same Worker took four to seven times that. The pages are therefore rendered on Vercel ([ADR 4](docs/adr/0004-pages-on-vercel-pipeline-on-cloudflare.md)).
 - **Pages read from the pipeline's API, never from the source**, so a slow or unreachable SMARD does not break the page.
 - **Time is stored in UTC and read in Berlin time.** A day in the API has 96 quarter hours, or 92 and 100 on the days the clocks change.
@@ -62,11 +63,11 @@ The pipeline imports 17 series in 15-minute resolution: the day-ahead price, gen
 
 Served by the pipeline Worker. Responses are JSON and may be read from any origin.
 
-| Route                      | Returns                                                                                              |
-| -------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `GET /api/days/YYYY-MM-DD` | All series for one calendar day in Berlin, one value per quarter hour                                |
-| `GET /api/status`          | The last import, a summary of the imports of the last 48 hours, and the newest value of every series |
-| `GET /api/health`          | A liveness check that does not touch the database                                                    |
+| Route                      | Returns                                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `GET /api/days/YYYY-MM-DD` | All series for one calendar day in Berlin, one value per quarter hour                                      |
+| `GET /api/status`          | The last import run, a summary of the runs of the 48 hours before it, and the newest value of every series |
+| `GET /api/health`          | A liveness check that does not touch the database                                                          |
 
 ## Project structure
 
@@ -103,10 +104,10 @@ pnpm db:migrate     # creates the local D1 database
 pnpm dev:worker     # the Worker on http://localhost:8787
 ```
 
-- Run the import once: `curl "http://localhost:8787/__scheduled?cron=*/15+*+*+*+*"`
+- Run the import once: `curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"`
 - What it imported: http://localhost:8787/api/status
 
-The local database lives in `worker/.wrangler/`. `/__scheduled` only exists in local development; on Cloudflare the Cron Trigger is the only way to start the import.
+The local database lives in `worker/.wrangler/`. `/__scheduled` only exists in local development; on Cloudflare the Cron Trigger is the only way to start the import. Locally a run imports all series at once (`IMPORT_ALL_SERIES`), because no CPU limit applies there; deployed, it imports the one that is due.
 
 ## Scripts
 
