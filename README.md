@@ -2,7 +2,9 @@
 
 **When is electricity in Germany cheap and clean?** A dashboard on public market data: day-ahead prices, the generation mix, and the best time window for running an appliance.
 
-> **Status:** Phase 1 (data pipeline). The import from SMARD, the database and the API work and are tested in the Workers runtime locally. Nothing is deployed yet, and there are no charts yet. See the [roadmap](docs/ROADMAP.md).
+**Live:** [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · Today's data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
+
+> **Status:** Phase 1 (data pipeline). The import from SMARD runs every 15 minutes on the deployed Worker and fills the database behind the API. There are no charts yet: the start page is a placeholder. See the [roadmap](docs/ROADMAP.md).
 
 ## Planned features
 
