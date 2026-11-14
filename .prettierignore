@@ -11,3 +11,4 @@ worker-configuration.d.ts
 playwright-report
 test-results
 test/fixtures/smard
+test/fixtures/api/*.json
