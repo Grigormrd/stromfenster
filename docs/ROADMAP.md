@@ -22,7 +22,7 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 - [x] First deployment, with the D1 database and the Cron Trigger; every push to `main` deploys after green checks
 - [x] Measure CPU time per request and per import on the deployed Worker: over the limit while Nuxt and the import shared a Worker ([ADR 4](adr/0004-pages-on-vercel-pipeline-on-cloudflare.md))
 - [x] Pipeline (import, D1, API) as its own Worker without a framework
-- [ ] Website deployed to Vercel
+- [x] Website deployed to Vercel
 - [ ] Measure the CPU time of the pipeline Worker
 
 **Done when:** the import has run for 48 hours without a gap, and the measured CPU time stays below the limit of the free plan.
