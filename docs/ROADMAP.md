@@ -25,9 +25,10 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 - [x] Website deployed to Vercel
 - [x] Measure the CPU time of the pipeline Worker: API requests fit, an import of all series does not ([ADR 5](adr/0005-one-series-per-run.md))
 - [x] Import one series per run, every minute
-- [ ] Measure the CPU time of an import run again
+- [x] Measure the CPU time of an import run again: median 8.2 ms, between 5 and 14 ms; about half of the runs are below 10 ms ([ADR 5](adr/0005-one-series-per-run.md))
+- [ ] 48 hours without a terminated run
 
-**Done when:** the import has run for 48 hours without a gap (one run per minute), and the measured CPU time stays below the limit of the free plan.
+**Done when:** the import has run for 48 hours without a gap (one run per minute) and without a run terminated for CPU time.
 
 ## Phase 2: Dashboard
 

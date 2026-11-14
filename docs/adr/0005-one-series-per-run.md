@@ -35,3 +35,21 @@ Considered and not chosen:
 - **Reads stay the same in total.** A run reads the window of one series, about 230 rows, instead of 3,900 every 15 minutes.
 - **"Without a gap" now means a run every minute.** The roadmap criterion for Phase 1 is read from the same summary, with a gap of one minute instead of fifteen.
 - **Runs with several series still work** and are covered by unit tests, in case the measurement leaves room to import more than one per run.
+
+## Addendum: measured after deployment (2026-11-14)
+
+The Cloudflare dashboard for the first 20 minutes of one series per run, 20 runs:
+
+|              | CPU time per run |
+| ------------ | ---------------- |
+| Lowest       | about 5 ms       |
+| Median (P50) | 8.2 ms           |
+| Highest      | about 14 ms      |
+
+A run now costs a fifth to a third of what it did. About half of the runs stay below 10 ms; the others are between 10 and 14 ms. The same series took 5 ms in one round and 10 to 14 ms in the next, so the spread does not come from the data. The likely cause is whether a run reuses a warm isolate or starts a new one, which cannot be seen from outside.
+
+That is no longer "over the limit on every run by a factor of four", but it is not "always below 10 ms" either. Cloudflare tolerates a Worker that infrequently runs over the limit; how it treats small overruns on about every second run is not documented. No run was terminated: 42 runs since the first deployment, all `ok`, 24 of them in the 24 minutes since the change.
+
+The 48 hours of the Phase 1 criterion are the practical test. A terminated run would show as a gap in `/api/status` and as `Exceeded CPU Time Limits` in the dashboard. If that happens, the next steps are known: skip the weekly file a series cannot have values in (next week's for measured series, last week's for forecasts), and narrow the window per kind of series.
+
+An attempt to profile the Worker locally through the inspector of `wrangler dev` did not give usable numbers: the profile had 5 to 11 samples per run.
