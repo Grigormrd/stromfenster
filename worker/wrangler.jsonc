@@ -13,8 +13,8 @@
     },
   ],
   "triggers": {
-    // Runs the import.
-    "crons": ["*/15 * * * *"],
+    // Runs the import: every minute, one series per run (worker/src/schedule.ts).
+    "crons": ["* * * * *"],
   },
   "observability": {
     "enabled": true,

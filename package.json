@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "nuxt dev",
-    "dev:worker": "wrangler dev --config worker/wrangler.jsonc --test-scheduled",
+    "dev:worker": "wrangler dev --config worker/wrangler.jsonc --test-scheduled --var IMPORT_ALL_SERIES:true",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "lint": "eslint .",

@@ -43,3 +43,7 @@ The Cron Trigger now calls the Worker's `scheduled` handler directly, which rece
 - **Two platforms, two deployments.** GitHub Actions deploys the Worker; Vercel deploys the site from the same repository. The API is public and allows cross-origin reads, which fits open data.
 - **An extra hop when a page is rendered.** If the API is slow or down during a revalidation, Vercel keeps serving the last rendered page. A first render without the API has to show a clear state instead of failing; that is part of Phase 2.
 - **Less contrast in hosting to a single-platform app, more in what is shown:** a decision that was written down with its exit condition, measured, and reversed when the numbers said so.
+
+## Addendum: the import was still over the limit (2026-11-14)
+
+The first scheduled run of the new Worker took about 40 ms of CPU time; API requests took 2 to 3 ms. The split removed the cost of starting Nuxt from every page view, but the import was expensive in its own right. [ADR 5](0005-one-series-per-run.md) deals with that.

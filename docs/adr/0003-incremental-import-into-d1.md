@@ -48,3 +48,7 @@ A series that fails is recorded and skipped; the others are imported (`partial`)
 ## Addendum: the import has its own Worker (2026-11-14)
 
 The CPU time was measured after the first deployment and was over the limit while the import shared a Worker with Nuxt ([ADR 4](0004-pages-on-vercel-pipeline-on-cloudflare.md)). The import now runs in a Worker without a framework. Its `scheduled` handler receives the scheduled time directly, so the Nitro hook mentioned above is no longer needed. Table, window and comparison are unchanged.
+
+## Addendum: one series per run (2026-11-14)
+
+The import now runs every minute for one series at a time ([ADR 5](0005-one-series-per-run.md)). Window, comparison and table are unchanged; a run reads and compares about 230 values instead of 3,900. The run log has a `series` column and an index on the run time, and the 48-hour summary is computed in SQL.
