@@ -1,0 +1,12 @@
+pnpm-lock.yaml
+.nuxt
+.output
+.nitro
+.data
+.cache
+.wrangler
+dist
+coverage
+worker-configuration.d.ts
+playwright-report
+test-results

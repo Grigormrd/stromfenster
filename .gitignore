@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+# nuxt / nitro build output
+.nuxt/
+.output/
+.nitro/
+.data/
+.cache/
+dist/
+
+# tooling
+coverage/
+playwright-report/
+test-results/
+
+# env
+.env*
+!.env.example
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.fleet/
+*.log
+
+# cloudflare
+.wrangler/
+.dev.vars*
+worker-configuration.d.ts

@@ -1,0 +1,41 @@
+{
+  "name": "stromfenster",
+  "private": true,
+  "description": "Shows when electricity in Germany is cheap and clean",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.18.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt": "^4.6.4",
+    "vue": "^3.5.45",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "@nuxt/test-utils": "^4.4.0",
+    "@types/node": "^24.19.2",
+    "@vue/test-utils": "^2.5.1",
+    "eslint": "^10.14.0",
+    "happy-dom": "^21.0.4",
+    "prettier": "^3.10.1",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0",
+    "vue-tsc": "^3.3.14",
+    "wrangler": "^4.161.0"
+  }
+}
