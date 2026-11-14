@@ -1,11 +1,8 @@
 /**
- * The data pipeline end to end, in the runtime it is deployed to: the built
- * Worker runs in workerd with a real D1 database. Only SMARD is replaced, by a
- * local server that serves responses recorded from it.
- *
- * Needs a build: `pnpm build` (or `pnpm check`, which builds first).
+ * The data pipeline end to end, in the runtime it is deployed to: the Worker
+ * runs in workerd with a real D1 database. Only SMARD is replaced, by a local
+ * server that serves responses recorded from it.
  */
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { D1Database } from "@cloudflare/workers-types";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -21,7 +18,7 @@ import { readWeekFixture, recordedAt } from "../fixtures/smard.ts";
 import type { SmardServer } from "./smard-server.ts";
 import { startSmardServer } from "./smard-server.ts";
 
-const WRANGLER_CONFIG = join(import.meta.dirname, "..", "..", ".output", "server", "wrangler.json");
+const WRANGLER_CONFIG = join(import.meta.dirname, "..", "..", "worker", "wrangler.jsonc");
 const CRON = "*/15 * * * *";
 
 // Two recordings of the same week, made some time apart.
@@ -89,12 +86,9 @@ describe("data pipeline in the Workers runtime", () => {
   }
 
   beforeAll(async () => {
-    if (!existsSync(WRANGLER_CONFIG)) {
-      throw new Error("No build found. Run `pnpm build` before `pnpm test:worker`.");
-    }
     smard = await startSmardServer(FIRST);
     harness = createTestHarness({
-      workers: [{ configPath: WRANGLER_CONFIG, vars: { NUXT_SMARD_BASE_URL: smard.baseUrl } }],
+      workers: [{ configPath: WRANGLER_CONFIG, vars: { SMARD_BASE_URL: smard.baseUrl } }],
     });
     await harness.listen();
     await worker().applyD1Migrations("DB");
@@ -260,25 +254,41 @@ describe("data pipeline in the Workers runtime", () => {
     expect(response.status).toBe(400);
   });
 
-  it("does not let anyone start the import over HTTP", async () => {
-    // Nitro's development server exposes tasks under /_nitro/tasks; the built
-    // Worker must not.
+  it("has no route that starts the import", async () => {
+    // Only the Cron Trigger runs the import. `/__scheduled` is the route
+    // `wrangler dev --test-scheduled` adds locally; it must not exist otherwise.
     const before = (await status()).lastImport;
 
-    const response = await harness.fetch("/_nitro/tasks/import");
-    await response.body?.cancel();
+    for (const path of ["/__scheduled", "/api/import", "/api/status/run"]) {
+      const response = await harness.fetch(path);
+      await response.body?.cancel();
+      expect(response.status, path).toBe(404);
+    }
+    const post = await harness.fetch("/api/status", { method: "POST" });
+    await post.body?.cancel();
 
-    expect(response.status).toBe(404);
+    expect(post.status).toBe(405);
     expect((await status()).lastImport).toEqual(before);
   });
 
-  it("still renders the start page and the health check", async () => {
-    const page = await harness.fetch("/");
-    const html = await page.text();
-    const health = await getJson<{ status: string }>("/api/health");
+  it("describes itself at the root and lets any site read it", async () => {
+    const response = await harness.fetch("/");
+    const body = (await response.json()) as { routes: Record<string, string> };
 
-    expect(page.status).toBe(200);
-    expect(html).toContain("<h1");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(response.headers.get("access-control-allow-origin")).toBe("*");
+    expect(Object.keys(body.routes)).toEqual([
+      "/api/days/YYYY-MM-DD",
+      "/api/status",
+      "/api/health",
+    ]);
+  });
+
+  it("answers the health check without touching the database", async () => {
+    const health = await getJson<{ status: string; time: string }>("/api/health");
+
     expect(health.status).toBe("ok");
+    expect(Number.isNaN(Date.parse(health.time))).toBe(false);
   });
 });

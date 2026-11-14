@@ -1,0 +1,26 @@
+{
+  // The Worker, the code it shares with the app, and everything that tests or
+  // feeds it. The Nuxt app has its own generated configuration.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*",
+    "../shared/**/*",
+    "../scripts/**/*",
+    "../test/unit/**/*",
+    "../test/worker/**/*",
+    "../test/fixtures/**/*.ts"
+  ]
+}

@@ -17,10 +17,13 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 - [x] SMARD client for day-ahead prices, generation per source, load and forecasts (15-minute resolution) ([ADR 2](adr/0002-smard-as-data-source.md))
 - [x] Normalisation into one time series model, tested against recorded SMARD responses, including the days the clocks change (92 and 100 quarter hours)
 - [x] D1 schema and an import that only writes new and corrected rows ([ADR 3](adr/0003-incremental-import-into-d1.md))
-- [x] Scheduled import as a Nitro task on a Cloudflare Cron Trigger
-- [x] Server routes that read from D1, tested with the built Worker in `workerd`
+- [x] Scheduled import on a Cloudflare Cron Trigger
+- [x] API routes that read from D1, tested with the Worker in `workerd`
 - [x] First deployment, with the D1 database and the Cron Trigger; every push to `main` deploys after green checks
-- [ ] Measure CPU time per request and per import on the deployed Worker
+- [x] Measure CPU time per request and per import on the deployed Worker: over the limit while Nuxt and the import shared a Worker ([ADR 4](adr/0004-pages-on-vercel-pipeline-on-cloudflare.md))
+- [x] Pipeline (import, D1, API) as its own Worker without a framework
+- [ ] Website deployed to Vercel
+- [ ] Measure the CPU time of the pipeline Worker
 
 **Done when:** the import has run for 48 hours without a gap, and the measured CPU time stays below the limit of the free plan.
 
@@ -29,7 +32,7 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 - [ ] Price chart for today and tomorrow, rendered on the server as SVG
 - [ ] Generation mix chart
 - [ ] "Best window": the cheapest and the cleanest time window for a chosen duration
-- [ ] Cached pages that revalidate when new data arrives
+- [ ] Pages cached on Vercel with incremental static regeneration, reading the pipeline's API
 - [ ] Loading, empty and stale-data states (what the page shows when the source is late)
 
 **Done when:** with JavaScript disabled, the start page shows today's chart and a recommendation.

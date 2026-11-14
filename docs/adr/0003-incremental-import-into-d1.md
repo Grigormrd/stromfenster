@@ -44,3 +44,7 @@ A series that fails is recorded and skipped; the others are imported (`partial`)
 - **History starts at the first deployment.** The import does not backfill. Earlier weeks can be loaded later with the same code and a different window.
 - **The import can be observed.** `/api/status` shows the last run and the newest value of every series, which is also what the "48 hours without a gap" criterion of Phase 1 is checked against.
 - **CPU time is still unmeasured.** Parsing 17 to 34 files and comparing about 3,600 values has to fit into 10 ms on the free plan. That can only be measured on the deployed Worker.
+
+## Addendum: the import has its own Worker (2026-11-14)
+
+The CPU time was measured after the first deployment and was over the limit while the import shared a Worker with Nuxt ([ADR 4](0004-pages-on-vercel-pipeline-on-cloudflare.md)). The import now runs in a Worker without a framework. Its `scheduled` handler receives the scheduled time directly, so the Nitro hook mentioned above is no longer needed. Table, window and comparison are unchanged.

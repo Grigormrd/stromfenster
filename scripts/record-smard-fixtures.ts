@@ -18,7 +18,7 @@ import { berlinDayStart, berlinWeekStart, isDateKey } from "../shared/utils/berl
 import { importWindow } from "../shared/utils/import-window.ts";
 import { SERIES, SERIES_IDS } from "../shared/utils/series.ts";
 import type { SeriesId } from "../shared/utils/series.ts";
-import { SMARD_BASE_URL, smardIndexUrl, smardWeekUrl } from "../server/utils/smard.ts";
+import { SMARD_BASE_URL, smardIndexUrl, smardWeekUrl } from "../worker/src/smard.ts";
 
 const [mode, name, ...rest] = process.argv.slice(2);
 if ((mode !== "snapshot" && mode !== "weeks") || !name) {

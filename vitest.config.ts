@@ -13,7 +13,7 @@ export default defineConfig({
         },
       },
       {
-        // The built Worker in workerd with a real D1 database. Needs a build.
+        // The pipeline Worker in workerd with a real D1 database.
         test: {
           name: "worker",
           include: ["test/worker/**/*.test.ts"],

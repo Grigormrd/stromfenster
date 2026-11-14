@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { healthStatus } from "../../server/utils/health";
+import { healthStatus } from "../../worker/src/health.ts";
 
 describe("healthStatus", () => {
   it("reports ok with the given time in UTC", () => {

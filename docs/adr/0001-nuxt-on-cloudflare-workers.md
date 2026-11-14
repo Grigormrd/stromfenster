@@ -1,6 +1,6 @@
 # 1. Nuxt on Cloudflare Workers, with D1 and a Cron Trigger
 
-- **Status:** Accepted
+- **Status:** Superseded in part by [ADR 4](0004-pages-on-vercel-pipeline-on-cloudflare.md): the pages moved to Vercel. D1 and the Cron Trigger stay.
 - **Date:** 2026-11-14
 
 ## Context
