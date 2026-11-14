@@ -2,24 +2,24 @@
 
 Goal for v1: a page that answers "when should I run the washing machine?" in five seconds. It shows today's and tomorrow's electricity prices in Germany, how clean the electricity is, and the best time window for an appliance. The answer is already in the HTML the server sends.
 
-## Phase 0: Foundation
+## Phase 0: Foundation ✅
 
 - [x] Nuxt 4, Vue 3 (Composition API), TypeScript strict with `noUncheckedIndexedAccess`
 - [x] ESLint, Prettier
 - [x] Vitest with two projects: plain unit tests and tests inside a Nuxt runtime
 - [x] Production build for Cloudflare Workers ([ADR 1](adr/0001-nuxt-on-cloudflare-workers.md)), checked locally in `workerd`
 - [x] GitHub Actions CI (format, lint, typecheck, test, build)
-- [ ] First deployment to Cloudflare Workers
 
-**Done when:** `pnpm check` is green locally and in CI, and every push to `main` deploys automatically.
+**Done when:** `pnpm check` is green locally and in CI.
 
 ## Phase 1: Data pipeline
 
-- [ ] SMARD client for day-ahead prices, generation per source, load and forecasts (15-minute resolution), with an ADR on the data source and its licence
-- [ ] Normalisation into one time series model, tested against recorded SMARD responses, including the days the clocks change (92 and 100 quarter hours)
-- [ ] D1 schema and an import that only writes new and revised rows (the free plan allows 100,000 written rows per day)
-- [ ] Scheduled import as a Nitro task on a Cloudflare Cron Trigger
-- [ ] Server routes that read from D1, tested in `workerd`
+- [x] SMARD client for day-ahead prices, generation per source, load and forecasts (15-minute resolution) ([ADR 2](adr/0002-smard-as-data-source.md))
+- [x] Normalisation into one time series model, tested against recorded SMARD responses, including the days the clocks change (92 and 100 quarter hours)
+- [x] D1 schema and an import that only writes new and corrected rows ([ADR 3](adr/0003-incremental-import-into-d1.md))
+- [x] Scheduled import as a Nitro task on a Cloudflare Cron Trigger
+- [x] Server routes that read from D1, tested with the built Worker in `workerd`
+- [ ] First deployment, with the D1 database and the Cron Trigger
 - [ ] Measure CPU time per request and per import on the deployed Worker
 
 **Done when:** the import has run for 48 hours without a gap, and the measured CPU time stays below the limit of the free plan.

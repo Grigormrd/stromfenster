@@ -2,7 +2,7 @@
 
 **When is electricity in Germany cheap and clean?** A dashboard on public market data: day-ahead prices, the generation mix, and the best time window for running an appliance.
 
-> **Status:** Phase 0 (foundation). The project builds, is tested and runs in the Workers runtime locally. It is not deployed yet, and there is no data pipeline or chart yet. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 1 (data pipeline). The import from SMARD, the database and the API work and are tested in the Workers runtime locally. Nothing is deployed yet, and there are no charts yet. See the [roadmap](docs/ROADMAP.md).
 
 ## Planned features
 
@@ -14,18 +14,18 @@
 
 ## Tech stack
 
-| Area      | Choice                                                  |
-| --------- | ------------------------------------------------------- |
-| Framework | Nuxt 4, Vue 3 (Composition API), TypeScript (strict)    |
-| Server    | Nitro server routes and scheduled tasks                 |
-| Hosting   | Cloudflare Workers, D1 for the time series (planned)    |
-| Data      | SMARD, the Bundesnetzagentur's market data platform     |
-| Testing   | Vitest (unit and Nuxt runtime), `workerd` for the build |
-| Quality   | ESLint, Prettier, GitHub Actions CI, Dependabot         |
+| Area      | Choice                                               |
+| --------- | ---------------------------------------------------- |
+| Framework | Nuxt 4, Vue 3 (Composition API), TypeScript (strict) |
+| Server    | Nitro server routes, import task on a Cron Trigger   |
+| Hosting   | Cloudflare Workers, D1 (SQLite) for the time series  |
+| Data      | SMARD, the Bundesnetzagentur's market data platform  |
+| Testing   | Vitest; the built Worker with D1 in `workerd`        |
+| Quality   | ESLint, Prettier, GitHub Actions CI, Dependabot      |
 
 ## Architecture
 
-Planned for v1. Only the Worker with a start page and a health route exists so far.
+The import, the database and the API exist; the dashboard pages and the page cache are planned.
 
 ```mermaid
 flowchart LR
@@ -40,15 +40,26 @@ flowchart LR
   Import -- "HTTPS" --> SMARD
 ```
 
-- **The import is independent of visitors.** A scheduled task fetches new values, normalises them and writes only what changed.
+- **The import is independent of visitors.** Every 15 minutes a Cron Trigger starts a task that reads the current files from SMARD, compares them with the database and writes only quarter hours that are new or were corrected ([ADR 3](docs/adr/0003-incremental-import-into-d1.md)).
 - **Pages read from the database**, never from the source directly, so a slow or unreachable source does not break the page.
-- **Rendered pages are cached** and revalidated when new data arrives.
+- **Time is stored in UTC and read in Berlin time.** A day in the API has 96 quarter hours, or 92 and 100 on the days the clocks change.
+- **Rendered pages will be cached** and revalidated when new data arrives.
 
 The reasoning behind these choices is recorded in [Architecture Decision Records](docs/adr).
 
 ## Data and attribution
 
-Market data comes from [SMARD](https://www.smard.de), published by the Bundesnetzagentur under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Attribution: Bundesnetzagentur | SMARD.de.
+Market data comes from [SMARD](https://www.smard.de), published by the Bundesnetzagentur under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Attribution: Bundesnetzagentur | SMARD.de. Why SMARD, and what it does not provide, is in [ADR 2](docs/adr/0002-smard-as-data-source.md).
+
+The app imports 17 series in 15-minute resolution: the day-ahead price, generation per energy source, load, and the forecasts for load, wind and solar.
+
+## API
+
+| Route                      | Returns                                                               |
+| -------------------------- | --------------------------------------------------------------------- |
+| `GET /api/days/YYYY-MM-DD` | All series for one calendar day in Berlin, one value per quarter hour |
+| `GET /api/status`          | The last import and the newest value of every series                  |
+| `GET /api/health`          | A liveness check that does not touch the database                     |
 
 ## Project structure
 
@@ -56,10 +67,17 @@ Market data comes from [SMARD](https://www.smard.de), published by the Bundesnet
 app/          Pages, components and styles
 server/
   api/        Server routes
-  utils/      Server-side logic
+  tasks/      The import task
+  plugins/    Connects the Cron Trigger to the task
+  utils/      SMARD client, import, database access
+shared/       Series catalogue and Berlin calendar maths, used by server and app
+migrations/   D1 schema
+scripts/      Records SMARD responses as test fixtures
 test/
   unit/       Plain unit tests
   nuxt/       Tests inside a Nuxt runtime
+  worker/     The built Worker with D1 in workerd
+  fixtures/   Recorded SMARD responses
 docs/
   adr/        Architecture Decision Records
   ROADMAP.md
@@ -71,33 +89,42 @@ Requirements: Node.js 24+ and pnpm. No accounts or credentials are needed.
 
 ```bash
 pnpm install
+pnpm db:migrate   # creates the local D1 database
 pnpm dev
 ```
 
 - App: http://localhost:3000
-- Health check: http://localhost:3000/api/health
+- Run the import once: http://localhost:3000/_nitro/tasks/import
+- What it imported: http://localhost:3000/api/status
+
+The local database lives in `.wrangler/`. In development the import runs when you open the task URL; the Cron Trigger only exists in the Workers runtime.
 
 ## Scripts
 
-| Command          | What it does                                                      |
-| ---------------- | ----------------------------------------------------------------- |
-| `pnpm dev`       | Start the app in watch mode                                       |
-| `pnpm build`     | Build the Worker for production                                   |
-| `pnpm preview`   | Run the production build locally in the Workers runtime           |
-| `pnpm test`      | Run all tests                                                     |
-| `pnpm lint`      | Lint the codebase                                                 |
-| `pnpm typecheck` | Type-check app and server code                                    |
-| `pnpm check`     | Everything CI runs after formatting: lint, typecheck, test, build |
-| `pnpm format`    | Format the codebase with Prettier                                 |
+| Command            | What it does                                                    |
+| ------------------ | --------------------------------------------------------------- |
+| `pnpm dev`         | Start the app in watch mode                                     |
+| `pnpm build`       | Build the Worker for production                                 |
+| `pnpm preview`     | Run the production build locally in the Workers runtime         |
+| `pnpm test`        | Run the unit tests and the tests inside a Nuxt runtime          |
+| `pnpm test:worker` | Run the built Worker with D1 in `workerd` (needs a build)       |
+| `pnpm lint`        | Lint the codebase                                               |
+| `pnpm typecheck`   | Type-check app, server, tests and scripts                       |
+| `pnpm check`       | Everything CI runs after formatting, including both test suites |
+| `pnpm db:migrate`  | Apply the migrations to the local D1 database                   |
+| `pnpm format`      | Format the codebase with Prettier                               |
 
 ## Testing
 
-| Layer             | Tool                      | What it covers so far                    |
-| ----------------- | ------------------------- | ---------------------------------------- |
-| Server-side logic | Vitest                    | The health status                        |
-| Pages             | Vitest + Nuxt environment | The start page renders inside a Nuxt app |
+Each layer is tested where it runs. The only thing replaced is SMARD itself, by responses recorded from it ([`test/fixtures/smard`](test/fixtures/smard)).
 
-More layers follow with the code they test: the import against recorded SMARD responses, server routes against D1 in `workerd`, end-to-end and accessibility tests with Playwright and axe-core.
+| Layer                 | Tool                      | What it covers                                                                                                                                        |
+| --------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses                                  |
+| Import, database, API | Vitest + `workerd` + D1   | The built Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes |
+| Pages                 | Vitest + Nuxt environment | The start page renders inside a Nuxt app                                                                                                              |
+
+End-to-end and accessibility tests with Playwright and axe-core follow with the dashboard.
 
 ## License
 
