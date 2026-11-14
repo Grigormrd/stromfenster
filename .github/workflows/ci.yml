@@ -33,7 +33,7 @@ jobs:
       - run: pnpm check
 
   deploy:
-    name: Deploy to Cloudflare
+    name: Deploy the pipeline Worker
     needs: check
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      # The name in wrangler.jsonc; Wrangler finds the database by it.
+      # The name in worker/wrangler.jsonc; Wrangler finds the database by it.
       D1_DATABASE: stromfenster
     steps:
       - name: Skip when Cloudflare is not configured
@@ -66,10 +66,6 @@ jobs:
       - if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         run: pnpm install --frozen-lockfile
 
-      # Wrangler deploys what Nitro built, including the migrations.
-      - if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        run: pnpm build
-
       # Only does something on the very first deployment.
       - name: Create the D1 database if it does not exist
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
@@ -85,7 +81,7 @@ jobs:
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         run: pnpm db:migrate:remote
 
-      # `run deploy` on purpose: plain `pnpm deploy` is a built-in pnpm command.
+      # Wrangler bundles worker/src itself; the website is deployed by Vercel.
       - name: Deploy the Worker
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        run: pnpm run deploy
+        run: pnpm deploy:worker

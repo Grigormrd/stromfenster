@@ -6,7 +6,7 @@ import {
   parseSmardWeek,
   SmardFormatError,
   smardWeekUrl,
-} from "../../server/utils/smard.ts";
+} from "../../worker/src/smard.ts";
 import { readWeekFixture, recordedAt } from "../fixtures/smard.ts";
 
 describe("smardWeekUrl", () => {

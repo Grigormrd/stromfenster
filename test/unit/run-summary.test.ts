@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { summariseRuns } from "../../server/utils/run-summary.ts";
-import type { ImportRun } from "../../server/utils/store.ts";
+import { summariseRuns } from "../../worker/src/run-summary.ts";
+import type { ImportRun } from "../../worker/src/store.ts";
 
 const now = Date.parse("2026-11-16T12:00:00Z") / 1000;
 const minutes = (count: number) => count * 60;

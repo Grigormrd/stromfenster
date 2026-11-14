@@ -1,18 +1,19 @@
-// Cloudflare configuration. Nitro merges this into the configuration it
-// generates for the built Worker (.output/server/wrangler.json).
+// The data pipeline Worker: Cron import, D1 and the JSON API.
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "stromfenster",
+  "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
   "d1_databases": [
     {
       "binding": "DB",
+      // No id: Wrangler finds the database by its name.
       "database_name": "stromfenster",
       "migrations_dir": "migrations",
     },
   ],
   "triggers": {
-    // Runs the import; see server/plugins/scheduled-import.ts.
+    // Runs the import.
     "crons": ["*/15 * * * *"],
   },
   "observability": {

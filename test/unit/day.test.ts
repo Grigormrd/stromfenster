@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { berlinDayStart } from "../../shared/utils/berlin-time.ts";
 import { SERIES_IDS } from "../../shared/utils/series.ts";
-import { buildDay } from "../../server/utils/day.ts";
+import { buildDay } from "../../worker/src/day.ts";
 
 describe("buildDay", () => {
   const start = berlinDayStart("2026-11-14");
