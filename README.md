@@ -2,9 +2,9 @@
 
 **When is electricity in Germany cheap and clean?** A dashboard on public market data: day-ahead prices, the generation mix, and the best time window for running an appliance.
 
-**Live data API:** [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
+**Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 1 (data pipeline). The import from SMARD runs every 15 minutes on Cloudflare and fills the database behind the API. The website is a placeholder and is being moved to Vercel ([ADR 4](docs/adr/0004-pages-on-vercel-pipeline-on-cloudflare.md)); there are no charts yet. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 1 (data pipeline). The import from SMARD runs every 15 minutes on Cloudflare and fills the database behind the API. The website on Vercel is still a placeholder; there are no charts yet. See the [roadmap](docs/ROADMAP.md).
 
 ## Planned features
 
@@ -133,7 +133,7 @@ The local database lives in `worker/.wrangler/`. `/__scheduled` only exists in l
 
 Migrations run before the new Worker goes live, so it never meets an old schema. The job needs the repository secrets `CLOUDFLARE_API_TOKEN` (permission to edit Workers scripts and D1) and `CLOUDFLARE_ACCOUNT_ID`; without them it is skipped with a notice. The database has no id in `worker/wrangler.jsonc`: Wrangler finds it by its name. `pnpm db:migrate:remote` and `pnpm deploy:worker` do the same by hand.
 
-**Website → Vercel.** Vercel builds the Nuxt app from this repository; no adapter or preset is configured here.
+**Website → Vercel.** Vercel builds the Nuxt app from this repository on every push; pull requests get preview deployments. No adapter or preset is configured here.
 
 ## Testing
 
