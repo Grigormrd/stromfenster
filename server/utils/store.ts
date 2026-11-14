@@ -30,7 +30,8 @@ export interface SeriesStore {
   /** Inserts new points and overwrites existing ones. */
   write(points: readonly Point[]): Promise<void>;
   recordRun(run: ImportRun): Promise<void>;
-  lastRun(): Promise<ImportRun | null>;
+  /** The most recent runs, newest first. */
+  recentRuns(limit: number): Promise<ImportRun[]>;
   /** Start of the newest quarter hour stored per series. */
   latestStarts(): Promise<Partial<Record<SeriesId, number>>>;
   /** Rows read and written through this store so far, as counted by the database. */
@@ -105,13 +106,14 @@ export function createD1Store(db: D1Database): SeriesStore {
         .run();
     },
 
-    async lastRun() {
-      const row = await db
+    async recentRuns(limit) {
+      const { results } = await db
         .prepare(
           `SELECT ran_at, duration_ms, status, inserted, updated, rows_read, rows_written, failures
-           FROM import_runs ORDER BY id DESC LIMIT 1`,
+           FROM import_runs ORDER BY id DESC LIMIT ?1`,
         )
-        .first<{
+        .bind(limit)
+        .all<{
           ran_at: number;
           duration_ms: number;
           status: ImportRun["status"];
@@ -121,8 +123,7 @@ export function createD1Store(db: D1Database): SeriesStore {
           rows_written: number;
           failures: string;
         }>();
-      if (!row) return null;
-      return {
+      return results.map((row) => ({
         ranAt: row.ran_at,
         durationMs: row.duration_ms,
         status: row.status,
@@ -131,7 +132,7 @@ export function createD1Store(db: D1Database): SeriesStore {
         rowsRead: row.rows_read,
         rowsWritten: row.rows_written,
         failures: JSON.parse(row.failures) as ImportRun["failures"],
-      };
+      }));
     },
 
     async latestStarts() {

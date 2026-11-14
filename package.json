@@ -18,6 +18,8 @@
     "test:worker": "vitest run --project worker",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:worker",
     "db:migrate": "wrangler d1 migrations apply DB --local --config wrangler.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "wrangler deploy",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "postinstall": "nuxt prepare"

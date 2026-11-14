@@ -49,6 +49,7 @@ interface StatusResponse {
     rowsWritten: number;
     failures: Record<string, string>;
   } | null;
+  recent: { hours: number; runs: number; longestGapMinutes: number | null };
   latest: Record<SeriesId, string | null>;
 }
 
@@ -106,9 +107,10 @@ describe("data pipeline in the Workers runtime", () => {
   });
 
   it("reports that nothing has been imported yet", async () => {
-    const { lastImport, latest } = await status();
+    const { lastImport, recent, latest } = await status();
 
     expect(lastImport).toBeNull();
+    expect(recent).toMatchObject({ hours: 48, runs: 0, longestGapMinutes: null });
     expect(Object.keys(latest).sort()).toEqual([...SERIES_IDS].sort());
     expect(Object.values(latest).every((value) => value === null)).toBe(true);
   });

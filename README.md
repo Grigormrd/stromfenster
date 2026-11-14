@@ -55,11 +55,11 @@ The app imports 17 series in 15-minute resolution: the day-ahead price, generati
 
 ## API
 
-| Route                      | Returns                                                               |
-| -------------------------- | --------------------------------------------------------------------- |
-| `GET /api/days/YYYY-MM-DD` | All series for one calendar day in Berlin, one value per quarter hour |
-| `GET /api/status`          | The last import and the newest value of every series                  |
-| `GET /api/health`          | A liveness check that does not touch the database                     |
+| Route                      | Returns                                                                                              |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `GET /api/days/YYYY-MM-DD` | All series for one calendar day in Berlin, one value per quarter hour                                |
+| `GET /api/status`          | The last import, a summary of the imports of the last 48 hours, and the newest value of every series |
+| `GET /api/health`          | A liveness check that does not touch the database                                                    |
 
 ## Project structure
 
@@ -113,6 +113,19 @@ The local database lives in `.wrangler/`. In development the import runs when yo
 | `pnpm check`       | Everything CI runs after formatting, including both test suites |
 | `pnpm db:migrate`  | Apply the migrations to the local D1 database                   |
 | `pnpm format`      | Format the codebase with Prettier                               |
+
+## Deployment
+
+GitHub Actions deploys every push to `main` after the checks are green:
+
+1. build the Worker,
+2. create the D1 database if it does not exist yet (first deployment only),
+3. apply the migrations to it,
+4. deploy the Worker with its Cron Trigger.
+
+Migrations run before the new Worker goes live, so it never meets an old schema. The job needs the repository secrets `CLOUDFLARE_API_TOKEN` (permission to edit Workers scripts and D1) and `CLOUDFLARE_ACCOUNT_ID`; without them it is skipped with a notice.
+
+The database has no id in `wrangler.jsonc`: Wrangler finds it by its name. `pnpm db:migrate:remote` and `pnpm run deploy` do the same by hand.
 
 ## Testing
 
