@@ -22,12 +22,34 @@ export default defineConfig({
           hookTimeout: 120_000,
         },
       },
-      // Components and composables inside a Nuxt runtime.
+      {
+        // The built website, started as a server: what a browser without
+        // JavaScript receives. Needs a build.
+        test: {
+          name: "site",
+          include: ["test/site/**/*.test.ts"],
+          environment: "node",
+          testTimeout: 60_000,
+          hookTimeout: 120_000,
+        },
+      },
+      // Components and pages inside a Nuxt runtime. The data API is replaced
+      // by endpoints the tests register, and the page is rendered for the
+      // moment the fixtures were recorded.
       await defineVitestProject({
         test: {
           name: "nuxt",
           include: ["test/nuxt/**/*.test.ts"],
           environment: "nuxt",
+          environmentOptions: {
+            nuxt: {
+              overrides: {
+                runtimeConfig: {
+                  public: { dataApiUrl: "", fixedNow: "2026-11-14T20:30:46Z" },
+                },
+              },
+            },
+          },
         },
       }),
     ],

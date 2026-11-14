@@ -15,6 +15,23 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
+  runtimeConfig: {
+    public: {
+      // The pipeline's API (NUXT_PUBLIC_DATA_API_URL). The default is the
+      // deployed Worker, so the site runs locally without the pipeline.
+      dataApiUrl: "https://stromfenster.plan-werk.workers.dev",
+      // An ISO 8601 time to render the page for, instead of the current time
+      // (NUXT_PUBLIC_FIXED_NOW). For tests against recorded data only.
+      fixedNow: "",
+    },
+  },
+
+  routeRules: {
+    // Rendered on the server, cached by Vercel, and rendered again in the
+    // background at most every five minutes.
+    "/": { isr: 300 },
+  },
+
   app: {
     head: {
       htmlAttrs: { lang: "en" },

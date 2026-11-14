@@ -4,21 +4,24 @@
 
 **Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 1 (data pipeline). The import from SMARD runs every minute on Cloudflare, one series at a time, and fills the database behind the API. The website on Vercel is still a placeholder; there are no charts yet. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 2 (dashboard). The start page shows prices, the expected share of wind and solar, today's generation and the best time window, rendered on the server. CO₂ figures, German, and the accessibility and performance passes are still to come. See the [roadmap](docs/ROADMAP.md).
 
-## Planned features
+## Features
 
 - **Prices for today and tomorrow** in 15-minute resolution, as soon as the day-ahead auction is published
-- **Best window**: the cheapest and the cleanest time to run something for a given duration ("two hours for the washing machine")
-- **Generation mix and CO₂ estimate**, with the method and its limits explained on the page
-- **Server-rendered charts**: the chart is in the HTML, so it is visible without JavaScript
-- **German and English**, light and dark mode, WCAG 2.1 AA
+- **Best window**: the cheapest time, and the time with the most wind and solar, to run something for 1 to 4 hours
+- **Generation today** by source, as it is measured
+- **Server-rendered charts**: the charts and the recommendation are in the HTML and work without JavaScript, including the choice of duration ([ADR 6](docs/adr/0006-server-rendered-svg-charts.md))
+- **A table for every chart**, light and dark mode
+
+Planned: a CO₂ estimate with its method explained, German and English, WCAG 2.1 AA checked with axe, one page per day.
 
 ## Tech stack
 
 | Area     | Choice                                                                       |
 | -------- | ---------------------------------------------------------------------------- |
-| Website  | Nuxt 4, Vue 3 (Composition API), TypeScript (strict), on Vercel              |
+| Website  | Nuxt 4, Vue 3 (Composition API), TypeScript (strict), on Vercel with ISR     |
+| Charts   | SVG rendered by Vue on the server, no chart library, plain CSS               |
 | Pipeline | A Cloudflare Worker without a framework: Cron Trigger, D1 (SQLite), JSON API |
 | Data     | SMARD, the Bundesnetzagentur's market data platform                          |
 | Testing  | Vitest; the Worker with D1 in `workerd`                                      |
@@ -26,7 +29,7 @@
 
 ## Architecture
 
-The pipeline exists and is deployed; the dashboard pages are planned.
+Both halves are deployed.
 
 ```mermaid
 flowchart LR
@@ -48,7 +51,7 @@ flowchart LR
 - **The import is independent of visitors.** A Cron Trigger starts it every minute. Each run reads the current file of one series from SMARD, compares it with the database and writes only quarter hours that are new or were corrected ([ADR 3](docs/adr/0003-incremental-import-into-d1.md)).
 - **One series per run.** Importing all 17 series at once took about four times the CPU time a Worker on the free plan may use per invocation, so they take turns; each series is imported every 17 minutes ([ADR 5](docs/adr/0005-one-series-per-run.md)).
 - **The pipeline and the pages are split along their CPU cost.** A Cloudflare Worker on the free plan has 10 ms of CPU time per invocation. The import and the API fit a small Worker; starting Nuxt in the same Worker took four to seven times that. The pages are therefore rendered on Vercel ([ADR 4](docs/adr/0004-pages-on-vercel-pipeline-on-cloudflare.md)).
-- **Pages read from the pipeline's API, never from the source**, so a slow or unreachable SMARD does not break the page.
+- **Pages read from the pipeline's API, never from the source**, so a slow or unreachable SMARD does not break the page. Vercel caches the rendered page and renders it again at most every five minutes; if the API does not answer, the page says so with a 503 that is not cached.
 - **Time is stored in UTC and read in Berlin time.** A day in the API has 96 quarter hours, or 92 and 100 on the days the clocks change.
 
 The reasoning behind these choices is recorded in [Architecture Decision Records](docs/adr).
@@ -72,17 +75,22 @@ Served by the pipeline Worker. Responses are JSON and may be read from any origi
 ## Project structure
 
 ```
-app/            The website: pages, components and styles (Nuxt)
+app/            The website (Nuxt)
+  pages/        The start page
+  components/   Charts, the recommendation, the chart card with its table
+  composables/  Data access and the clock of the page
+  utils/        Chart geometry and formatting
 worker/         The data pipeline (Cloudflare Worker)
   src/          Import, SMARD client, database access, API routes
   migrations/   D1 schema
-shared/         Series catalogue and Berlin calendar maths, used by both
+shared/         Used by both: series catalogue, Berlin calendar, best window, generation mix
 scripts/        Records SMARD responses as test fixtures
 test/
   unit/         Plain unit tests
   nuxt/         Tests inside a Nuxt runtime
   worker/       The Worker with D1 in workerd
-  fixtures/     Recorded SMARD responses
+  site/         The built website: the HTML it sends
+  fixtures/     Recorded responses from SMARD and from the deployed API
 docs/
   adr/          Architecture Decision Records
   ROADMAP.md
@@ -111,18 +119,19 @@ The local database lives in `worker/.wrangler/`. `/__scheduled` only exists in l
 
 ## Scripts
 
-| Command            | What it does                                                    |
-| ------------------ | --------------------------------------------------------------- |
-| `pnpm dev`         | Start the website in watch mode                                 |
-| `pnpm dev:worker`  | Start the pipeline Worker locally                               |
-| `pnpm build`       | Build the website for production                                |
-| `pnpm test`        | Run the unit tests and the tests inside a Nuxt runtime          |
-| `pnpm test:worker` | Run the Worker with D1 in `workerd`                             |
-| `pnpm lint`        | Lint the codebase                                               |
-| `pnpm typecheck`   | Type-check the website, the Worker, tests and scripts           |
-| `pnpm check`       | Everything CI runs after formatting, including both test suites |
-| `pnpm db:migrate`  | Apply the migrations to the local D1 database                   |
-| `pnpm format`      | Format the codebase with Prettier                               |
+| Command            | What it does                                                        |
+| ------------------ | ------------------------------------------------------------------- |
+| `pnpm dev`         | Start the website in watch mode                                     |
+| `pnpm dev:worker`  | Start the pipeline Worker locally                                   |
+| `pnpm build`       | Build the website for production                                    |
+| `pnpm test`        | Run the unit tests and the tests inside a Nuxt runtime              |
+| `pnpm test:worker` | Run the Worker with D1 in `workerd`                                 |
+| `pnpm test:site`   | Start the built website and check the HTML it sends (needs a build) |
+| `pnpm lint`        | Lint the codebase                                                   |
+| `pnpm typecheck`   | Type-check the website, the Worker, tests and scripts               |
+| `pnpm check`       | Everything CI runs after formatting, including both test suites     |
+| `pnpm db:migrate`  | Apply the migrations to the local D1 database                       |
+| `pnpm format`      | Format the codebase with Prettier                                   |
 
 ## Deployment
 
@@ -144,9 +153,11 @@ Each layer is tested where it runs. The only thing replaced is SMARD itself, by 
 | --------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses; the summary of import runs |
 | Import, database, API | Vitest + `workerd` + D1   | The Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes  |
-| Pages                 | Vitest + Nuxt environment | The start page renders inside a Nuxt app                                                                                                         |
+| Dashboard logic       | Vitest                    | Best window against a brute-force check, timeline, generation mix, chart geometry, formatting; on days recorded from the deployed API            |
+| Pages and components  | Vitest + Nuxt environment | The page and the charts rendered for the recorded evening; the state when the data API fails                                                     |
+| Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript: recommendations, charts, the duration choice by CSS; 503 and `no-store` when the data API is down               |
 
-End-to-end and accessibility tests with Playwright and axe-core follow with the dashboard.
+End-to-end and accessibility tests with Playwright and axe-core follow in Phase 5.
 
 ## License
 
