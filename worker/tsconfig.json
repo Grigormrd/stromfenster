@@ -21,6 +21,7 @@
     "../scripts/**/*",
     "../test/unit/**/*",
     "../test/worker/**/*",
+    "../test/site/**/*",
     "../test/fixtures/**/*.ts"
   ]
 }

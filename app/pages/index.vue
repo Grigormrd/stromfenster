@@ -7,7 +7,8 @@ useSeoMeta({
   description,
 });
 
-const { dashboard, now, data, error } = await useDashboard();
+const { dashboard, now, data, error, ready } = useDashboard();
+await ready;
 
 const today = computed(() => {
   const view = dashboard.value;

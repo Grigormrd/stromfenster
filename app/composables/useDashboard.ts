@@ -13,33 +13,39 @@ const currentSeconds = () => Math.floor(Date.now() / 1000);
  * the browser with the page, so hydration shows exactly what the server drew.
  * Vercel may serve a cached page for a while, so the browser checks the age of
  * what it was given and fetches again if it is old.
+ *
+ * Everything that needs the component or the request is set up here, before
+ * anything is awaited; the page awaits `ready`. After an `await` inside a
+ * composable, Vue and Nuxt no longer know which component is being set up.
  */
-export async function useDashboard() {
+export function useDashboard() {
   const config = useRuntimeConfig();
   const fixedNow = config.public.fixedNow ? Date.parse(config.public.fixedNow) / 1000 : null;
 
   const now = useState<number>("dashboard-now", () => fixedNow ?? currentSeconds());
 
-  const { data, error, refresh } = await useAsyncData("dashboard-days", async () => {
+  const request = useAsyncData("dashboard-days", async () => {
     const today = berlinDateKey(now.value);
     const day = (date: string) =>
       $fetch<DayData>(`${config.public.dataApiUrl}/api/days/${date}`, { timeout: 8000 });
     const [todayData, tomorrowData] = await Promise.all([day(today), day(addDays(today, 1))]);
     return { today: todayData, tomorrow: tomorrowData, fetchedAt: now.value };
   });
+  const { data, error, refresh } = request;
 
   const dashboard = computed(() =>
     data.value ? buildDashboard(data.value.today, data.value.tomorrow, now.value) : null,
   );
 
-  if (import.meta.server && error.value) {
+  const event = import.meta.server ? useRequestEvent() : undefined;
+  const cacheControl = import.meta.server ? useResponseHeader("cache-control") : undefined;
+
+  const ready = request.then(() => {
+    if (!error.value) return;
     // Not a page worth caching: say so, and let the next request try again.
-    const event = useRequestEvent();
-    if (event) {
-      setResponseStatus(event, 503);
-      setResponseHeader(event, "cache-control", "no-store");
-    }
-  }
+    if (event) setResponseStatus(event, 503);
+    if (cacheControl) cacheControl.value = "no-store";
+  });
 
   onMounted(() => {
     if (fixedNow !== null) return;
@@ -61,5 +67,5 @@ export async function useDashboard() {
     });
   });
 
-  return { dashboard, now, data, error };
+  return { dashboard, now, data, error, ready };
 }
