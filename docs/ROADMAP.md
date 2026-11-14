@@ -32,11 +32,13 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 ## Phase 2: Dashboard
 
-- [ ] Price chart for today and tomorrow, rendered on the server as SVG
-- [ ] Generation mix chart
-- [ ] "Best window": the cheapest and the cleanest time window for a chosen duration
-- [ ] Pages cached on Vercel with incremental static regeneration, reading the pipeline's API
-- [ ] Loading, empty and stale-data states (what the page shows when the source is late)
+- [x] Price chart for today and tomorrow, rendered on the server as SVG ([ADR 6](adr/0006-server-rendered-svg-charts.md))
+- [x] Chart of the expected share of wind and solar, from the forecasts
+- [x] Generation mix chart for today, in six groups
+- [x] "Best window": the cheapest window and the one with the most wind and solar, for 1 to 4 hours, chosen without JavaScript
+- [x] Page cached on Vercel with incremental static regeneration, reading the pipeline's API; an open tab refreshes itself
+- [x] States for missing data: the API does not answer, tomorrow's prices are not published yet, no price for the current quarter hour
+- [ ] Check the cached page on Vercel (cache headers, revalidation)
 
 **Done when:** with JavaScript disabled, the start page shows today's chart and a recommendation.
 
