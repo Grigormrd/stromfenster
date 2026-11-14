@@ -1,15 +1,52 @@
+/*
+ * Design tokens. Charts and text are written against these roles; light and
+ * dark values swap here and nowhere else. The series colours were checked for
+ * colour-blind separation and contrast in both modes, in the order they are
+ * stacked (docs/adr/0006).
+ */
 :root {
   color-scheme: light dark;
-  --color-background: #ffffff;
-  --color-foreground: #14181f;
-  --color-muted: #4b5563;
+
+  --plane: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-secondary: #52514e;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgb(11 11 11 / 10%);
+
+  --price: #2a78d6;
+  --clean: #008300;
+
+  --mix-other: #e87ba4;
+  --mix-coal: #6250d6;
+  --mix-gas: #eb6834;
+  --mix-other-renewables: #1baf7a;
+  --mix-wind: #2a78d6;
+  --mix-solar: #eda100;
+
+  --radius: 12px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: #0f1318;
-    --color-foreground: #eef1f5;
-    --color-muted: #a6b0bd;
+    --plane: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #f0efec;
+    --ink-secondary: #c3c2b7;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgb(255 255 255 / 10%);
+
+    --price: #3987e5;
+
+    --mix-other: #d55181;
+    --mix-coal: #9085e9;
+    --mix-gas: #d95926;
+    --mix-other-renewables: #199e70;
+    --mix-wind: #3987e5;
+    --mix-solar: #c98500;
   }
 }
 
@@ -21,13 +58,55 @@
 
 body {
   margin: 0;
-  background: var(--color-background);
-  color: var(--color-foreground);
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  background: var(--plane);
+  color: var(--ink);
+  font-family: var(--font);
   line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.secondary {
+  color: var(--ink-secondary);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * The duration is chosen with radio buttons, and everything that depends on
+ * it is in the page for every duration. CSS shows the one that is checked, so
+ * the choice works before any JavaScript has loaded, and without it.
+ */
+[data-duration] {
+  display: none;
+}
+
+.dashboard:has(#duration-1:checked) [data-duration="1"],
+.dashboard:has(#duration-2:checked) [data-duration="2"],
+.dashboard:has(#duration-3:checked) [data-duration="3"],
+.dashboard:has(#duration-4:checked) [data-duration="4"] {
+  display: revert;
 }
