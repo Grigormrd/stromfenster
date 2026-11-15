@@ -51,6 +51,27 @@ describe("buildDashboard on the recorded evening of 14 November", () => {
     expect(dashboard.todaySlots).toBe(96);
   });
 
+  it("estimates the CO₂ intensity of what has been measured today", () => {
+    const { co2, mixSlots, renewableShareLatest } = dashboard;
+
+    expect(co2.series).toHaveLength(96);
+    expect(co2.series[mixSlots - 1]).toBe(co2.latest);
+    expect(co2.series[mixSlots]).toBeNull();
+    expect(co2.latest).toBeGreaterThan(0);
+    expect(co2.todaySoFar).toBeGreaterThan(0);
+    expect(co2.todaySoFar).toBeLessThan(1119);
+    expect(renewableShareLatest).toBeGreaterThan(0);
+    expect(renewableShareLatest).toBeLessThan(1);
+  });
+
+  it("has no CO₂ figures before anything is measured", () => {
+    const { co2, renewableShareLatest } = buildDashboard(tomorrow, tomorrow, API_RECORDED_AT);
+
+    expect(co2.latest).toBeNull();
+    expect(co2.todaySoFar).toBeNull();
+    expect(renewableShareLatest).toBeNull();
+  });
+
   it("has today's measured generation up to the evening", () => {
     expect(dashboard.mixSlots).toBeGreaterThan(70);
     expect(dashboard.mixSlots).toBeLessThan(96);

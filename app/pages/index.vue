@@ -52,10 +52,40 @@ const mixRows = computed(() => {
       today.value!.starts.slice(0, view.mixSlots),
     ),
   );
+  const co2 = hourlyMeans(
+    view.co2.series.slice(0, view.mixSlots),
+    today.value.starts.slice(0, view.mixSlots),
+  );
   return (perGroup[0] ?? []).map((row, index) => ({
     time: row.time,
     values: perGroup.map((rows) => rows[index]?.value ?? null),
+    co2: co2[index]?.value ?? null,
   }));
+});
+
+/** The three figures above the generation chart; empty before the first measurement of the day. */
+const generationFigures = computed(() => {
+  const view = dashboard.value;
+  if (!view || !today.value || view.mixSlots === 0) return [];
+  const latestStart = today.value.starts[view.mixSlots - 1]!;
+  const latestTime = `${formatTime(latestStart)}–${formatTime(latestStart + view.timeline.step)}`;
+  return [
+    {
+      label: "CO₂ per kWh, latest",
+      value: view.co2.latest === null ? "–" : formatGrams(view.co2.latest),
+      note: `${latestTime}, estimate`,
+    },
+    {
+      label: "CO₂ per kWh, today so far",
+      value: view.co2.todaySoFar === null ? "–" : formatGrams(view.co2.todaySoFar),
+      note: `German mix in ${EMISSION_SOURCE.year}: ${formatGrams(EMISSION_SOURCE.germanMix2024)}`,
+    },
+    {
+      label: "Renewables, latest",
+      value: view.renewableShareLatest === null ? "–" : formatShare(view.renewableShareLatest),
+      note: `${latestTime}, share of generation`,
+    },
+  ];
 });
 
 const legend = [...MIX_GROUPS].reverse();
@@ -90,6 +120,12 @@ const cell = (value: number | null, format: (value: number) => string) =>
       </p>
 
       <BestWindows :dashboard="dashboard" />
+
+      <p class="price-note secondary">
+        These are wholesale prices. A household pays them only with a dynamic tariff, and then with
+        taxes, levies and grid fees on top.
+        <NuxtLink to="/methodology#prices">What the price includes</NuxtLink>
+      </p>
 
       <ChartCard
         title="Price"
@@ -190,6 +226,17 @@ const cell = (value: number | null, format: (value: number) => string) =>
         table-label="Show the generation as a table"
       >
         <template #legend>
+          <dl v-if="generationFigures.length" class="figures">
+            <div v-for="figure in generationFigures" :key="figure.label">
+              <dt>{{ figure.label }}</dt>
+              <dd>{{ figure.value }}</dd>
+              <dd class="figure-note">{{ figure.note }}</dd>
+            </div>
+          </dl>
+          <p class="figures-source secondary">
+            CO₂ is estimated from the generation mix.
+            <NuxtLink to="/methodology#co2">How it is estimated</NuxtLink>
+          </p>
           <ul class="legend">
             <li v-for="group in legend" :key="group.id">
               <span :class="`swatch swatch--${group.id}`" />{{ group.label }}
@@ -210,12 +257,13 @@ const cell = (value: number | null, format: (value: number) => string) =>
         <template #table>
           <table>
             <caption>
-              Hourly mean in GW
+              Hourly mean in GW, and estimated CO₂ in g/kWh
             </caption>
             <thead>
               <tr>
                 <th scope="col">Hour</th>
                 <th v-for="group in MIX_GROUPS" :key="group.id" scope="col">{{ group.label }}</th>
+                <th scope="col">CO₂</th>
               </tr>
             </thead>
             <tbody>
@@ -224,6 +272,7 @@ const cell = (value: number | null, format: (value: number) => string) =>
                 <td v-for="(value, index) in row.values" :key="index">
                   {{ cell(value, formatDecimal) }}
                 </td>
+                <td>{{ cell(row.co2, formatWhole) }}</td>
               </tr>
             </tbody>
           </table>
@@ -240,6 +289,7 @@ const cell = (value: number | null, format: (value: number) => string) =>
         Data:
         <a href="https://www.smard.de">Bundesnetzagentur | SMARD.de</a>,
         <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+        · <NuxtLink to="/methodology">How these figures are calculated</NuxtLink>
       </p>
     </footer>
   </main>
@@ -282,6 +332,41 @@ h1 {
 
 .stale {
   font-size: 0.9375rem;
+}
+
+.price-note {
+  padding: 0 0.25rem;
+  font-size: 0.875rem;
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.figures dt {
+  color: var(--ink-secondary);
+  font-size: 0.875rem;
+}
+
+.figures dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.figures .figure-note {
+  color: var(--ink-secondary);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.figures-source {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .legend {

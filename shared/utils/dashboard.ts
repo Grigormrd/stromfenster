@@ -1,8 +1,9 @@
 import type { BestWindow } from "./best-window.ts";
 import { bestWindow } from "./best-window.ts";
 import type { DayData } from "./day-data.ts";
+import { co2Intensity, co2IntensitySeries, meanCo2Intensity } from "./emissions.ts";
 import type { Mix } from "./mix.ts";
-import { generationMix, measuredSlots } from "./mix.ts";
+import { generationMix, measuredSlots, renewableShare } from "./mix.ts";
 import type { Timeline } from "./timeline.ts";
 import { buildTimeline, slotAt } from "./timeline.ts";
 
@@ -35,6 +36,18 @@ export interface Dashboard {
   mix: Mix;
   mixSlots: number;
   /**
+   * Estimated direct CO₂ emissions of today's generation in g/kWh: per quarter
+   * hour, for the latest measured one, and over the day so far. `null` before
+   * the first measurement of the day.
+   */
+  co2: {
+    series: (number | null)[];
+    latest: number | null;
+    todaySoFar: number | null;
+  };
+  /** Share of renewables in generation in the latest measured quarter hour, 0 to 1. */
+  renewableShareLatest: number | null;
+  /**
    * True when there is no price for the current quarter hour: the import has
    * fallen behind, or the page is being shown long after it was rendered.
    */
@@ -61,6 +74,8 @@ export function buildDashboard(today: DayData, tomorrow: DayData, now: number): 
 
   const currentPrice = nowSlot >= 0 ? (timeline.price[nowSlot] ?? null) : null;
   const mix = generationMix(today);
+  const mixSlots = measuredSlots(mix);
+  const latestMeasured = mixSlots - 1;
 
   return {
     timeline,
@@ -70,7 +85,13 @@ export function buildDashboard(today: DayData, tomorrow: DayData, now: number): 
     hasTomorrow: timeline.price.slice(today.slots).some((price) => price !== null),
     todaySlots: today.slots,
     mix,
-    mixSlots: measuredSlots(mix),
+    mixSlots,
+    co2: {
+      series: co2IntensitySeries(today),
+      latest: latestMeasured >= 0 ? co2Intensity(today, latestMeasured) : null,
+      todaySoFar: meanCo2Intensity(today),
+    },
+    renewableShareLatest: latestMeasured >= 0 ? renewableShare(mix, latestMeasured) : null,
     stale: currentPrice === null,
   };
 }
