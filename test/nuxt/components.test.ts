@@ -130,7 +130,7 @@ describe("BestWindows", () => {
 
     const section = await mountSuspended(BestWindows, { props: { dashboard: morning } });
 
-    expect(section.text()).toContain("Tomorrow's prices are published around 13:00");
+    expect(section.text()).toContain("Tomorrow's prices are published in the early afternoon");
     expect(section.find('[data-duration="2"] .when').text()).toMatch(/^Today /);
   });
 

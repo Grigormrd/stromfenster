@@ -47,3 +47,13 @@ export function formatPrice(centsPerKwh: number): string {
 export function formatShare(share: number): string {
   return `${whole.format(share * 100)} %`;
 }
+
+/** 258 */
+export function formatWhole(value: number): string {
+  return whole.format(value);
+}
+
+/** 258 g/kWh */
+export function formatGrams(gramsPerKwh: number): string {
+  return `${whole.format(gramsPerKwh)} g/kWh`;
+}

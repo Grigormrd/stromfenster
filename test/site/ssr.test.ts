@@ -158,6 +158,29 @@ describe("the start page as the server sends it", () => {
     expect(html.match(/<table/g)).toHaveLength(3);
     expect(html).toContain("Hourly mean in ct/kWh");
   });
+
+  it("contains the CO₂ estimate and the note on wholesale prices", () => {
+    expect(html).toContain("CO₂ per kWh, today so far");
+    expect(html).toMatch(/<dd[^>]*>\d+ g\/kWh<\/dd>/);
+    expect(html).toContain("German mix in 2024: 363 g/kWh");
+    expect(html).toContain("These are wholesale prices.");
+    expect(html).toContain('href="/methodology#co2"');
+  });
+
+  it("serves the methodology page with the emission factors and their source", async () => {
+    const page = await fetch(`${site.url}/methodology`);
+    const text = await page.text();
+
+    expect(page.status).toBe(200);
+    expect(text.match(/<h1[^>]*>How the figures are calculated<\/h1>/g)).toHaveLength(1);
+    expect(text).toContain("1,119");
+    expect(text).toContain("Climate Change 13/2025");
+    expect(text).toContain(
+      'href="https://www.umweltbundesamt.de/publikationen/entwicklung-der-spezifischen-treibhausgas-11"',
+    );
+    expect(text).toContain('id="co2"');
+    expect(text).toContain('id="prices"');
+  });
 });
 
 describe("the start page when the data API cannot be reached", () => {

@@ -42,12 +42,12 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 **Done when:** with JavaScript disabled, the start page shows today's chart and a recommendation.
 
-## Phase 3: CO₂ and methodology
+## Phase 3: CO₂ and methodology ✅
 
-- [ ] CO₂ intensity estimated from the generation mix, with emission factors from a published source (ADR)
-- [ ] Share of wind and solar for the hours that only have forecasts
-- [ ] Methodology page: what is measured, what is estimated, what is left out (imports and exports)
-- [ ] Clear note that the wholesale price is not the household price
+- [x] CO₂ intensity estimated from the generation mix, with the direct emission factors of the Umweltbundesamt ([ADR 7](adr/0007-co2-estimate-from-the-generation-mix.md))
+- [x] Share of wind and solar for the hours that only have forecasts
+- [x] Methodology page: what is measured, what is estimated, what is left out (imports and exports); its tables are built from the definitions the calculations use
+- [x] Clear note that the wholesale price is not the household price
 
 **Done when:** every number on the page can be traced to its source.
 

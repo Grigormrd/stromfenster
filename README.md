@@ -4,17 +4,18 @@
 
 **Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 2 (dashboard). The start page shows prices, the expected share of wind and solar, today's generation and the best time window, rendered on the server. CO₂ figures, German, and the accessibility and performance passes are still to come. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 3 (CO₂ and methodology). The start page shows prices, the expected share of wind and solar, today's generation with an estimate of its CO₂ emissions, and the best time window. A methodology page explains every figure. German, and the accessibility and performance passes, are still to come. See the [roadmap](docs/ROADMAP.md).
 
 ## Features
 
 - **Prices for today and tomorrow** in 15-minute resolution, as soon as the day-ahead auction is published
 - **Best window**: the cheapest time, and the time with the most wind and solar, to run something for 1 to 4 hours
-- **Generation today** by source, as it is measured
+- **Generation today** by source, as it is measured, with an **estimate of its CO₂ emissions** from published emission factors ([ADR 7](docs/adr/0007-co2-estimate-from-the-generation-mix.md))
+- **A methodology page**: what is measured, what is estimated, what is left out, and where each number comes from
 - **Server-rendered charts**: the charts and the recommendation are in the HTML and work without JavaScript, including the choice of duration ([ADR 6](docs/adr/0006-server-rendered-svg-charts.md))
 - **A table for every chart**, light and dark mode
 
-Planned: a CO₂ estimate with its method explained, German and English, WCAG 2.1 AA checked with axe, one page per day.
+Planned: German and English, WCAG 2.1 AA checked with axe, one page per day.
 
 ## Tech stack
 
@@ -76,14 +77,14 @@ Served by the pipeline Worker. Responses are JSON and may be read from any origi
 
 ```
 app/            The website (Nuxt)
-  pages/        The start page
+  pages/        The start page and the methodology page
   components/   Charts, the recommendation, the chart card with its table
   composables/  Data access and the clock of the page
   utils/        Chart geometry and formatting
 worker/         The data pipeline (Cloudflare Worker)
   src/          Import, SMARD client, database access, API routes
   migrations/   D1 schema
-shared/         Used by both: series catalogue, Berlin calendar, best window, generation mix
+shared/         Used by both: series catalogue, Berlin calendar, best window, generation mix, CO₂ estimate
 scripts/        Records SMARD responses as test fixtures
 test/
   unit/         Plain unit tests
@@ -149,13 +150,13 @@ Migrations run before the new Worker goes live, so it never meets an old schema.
 
 Each layer is tested where it runs. The only thing replaced is SMARD itself, by responses recorded from it ([`test/fixtures/smard`](test/fixtures/smard)).
 
-| Layer                 | Tool                      | What it covers                                                                                                                                   |
-| --------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses; the summary of import runs |
-| Import, database, API | Vitest + `workerd` + D1   | The Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes  |
-| Dashboard logic       | Vitest                    | Best window against a brute-force check, timeline, generation mix, chart geometry, formatting; on days recorded from the deployed API            |
-| Pages and components  | Vitest + Nuxt environment | The page and the charts rendered for the recorded evening; the state when the data API fails                                                     |
-| Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript: recommendations, charts, the duration choice by CSS; 503 and `no-store` when the data API is down               |
+| Layer                 | Tool                      | What it covers                                                                                                                                                     |
+| --------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses; the summary of import runs                   |
+| Import, database, API | Vitest + `workerd` + D1   | The Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes                    |
+| Dashboard logic       | Vitest                    | Best window against a brute-force check, timeline, generation mix, CO₂ estimate, chart geometry, formatting; on days recorded from the deployed API                |
+| Pages and components  | Vitest + Nuxt environment | The pages and the charts rendered for the recorded evening; the methodology tables against the definitions the calculations use; the state when the data API fails |
+| Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript: recommendations, charts, the duration choice by CSS; 503 and `no-store` when the data API is down                                 |
 
 End-to-end and accessibility tests with Playwright and axe-core follow in Phase 5.
 

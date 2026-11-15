@@ -68,7 +68,10 @@ describe("start page", () => {
     expect(tables[0]!.find("tbody tr").text()).toMatch(/^00:00/);
     // Generation only has rows for the hours that were measured.
     expect(tables[2]!.findAll("tbody tr").length).toBeLessThan(24);
-    expect(tables[2]!.findAll("thead th")).toHaveLength(7);
+    // The hour, six groups and the estimated CO₂.
+    const columns = tables[2]!.findAll("thead th").map((heading) => heading.text());
+    expect(columns).toHaveLength(8);
+    expect(columns.at(-1)).toBe("CO₂");
   });
 
   it("names the source and its licence", async () => {

@@ -72,7 +72,8 @@ const entries = computed(() =>
     </div>
 
     <p v-if="!dashboard.hasTomorrow" class="secondary note">
-      Tomorrow's prices are published around 13:00. Until then the cheapest window is within today.
+      Tomorrow's prices are published in the early afternoon. Until then the cheapest window is
+      within today.
     </p>
   </section>
 </template>
