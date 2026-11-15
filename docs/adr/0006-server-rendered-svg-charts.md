@@ -37,5 +37,6 @@ What the charts need is small: a linear scale, round axis ticks, and a path for 
 - **The page is larger as HTML** than a page that draws on the client: about 91 kB, 20 kB compressed, because each chart is in it twice and the tables as well.
 - **Axis, tick and tooltip logic is ours to maintain.** New chart types mean new geometry.
 - **The cached page and the clock.** The page is rendered for a moment and cached for five minutes; "now" and the windows are from that moment. The browser corrects the marker after hydration and refetches when the data is older than fifteen minutes or the day has changed. Without JavaScript a visitor sees the state of the last render, with its time in the footer.
+- **Checked on the deployment (15 November 2026).** A request found a page rendered 27 minutes earlier: Vercel served it with `x-vercel-cache: STALE` and rendered a new one in the background. Half a minute later the same URL came from the cache with `HIT`, an age of 22 seconds and the new time in its footer.
 - **When the data API is down**, the server answers with 503, `no-store` and a page that says so, instead of caching an empty dashboard.
 - **Keyboard access to single values in a chart** is not there yet; the tables are the accessible route. That is part of the accessibility pass in Phase 5.
