@@ -30,7 +30,7 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 **Done when:** the import has run for 48 hours without a gap (one run per minute) and without a run terminated for CPU time.
 
-## Phase 2: Dashboard
+## Phase 2: Dashboard ✅
 
 - [x] Price chart for today and tomorrow, rendered on the server as SVG ([ADR 6](adr/0006-server-rendered-svg-charts.md))
 - [x] Chart of the expected share of wind and solar, from the forecasts
@@ -38,7 +38,7 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 - [x] "Best window": the cheapest window and the one with the most wind and solar, for 1 to 4 hours, chosen without JavaScript
 - [x] Page cached on Vercel with incremental static regeneration, reading the pipeline's API; an open tab refreshes itself
 - [x] States for missing data: the API does not answer, tomorrow's prices are not published yet, no price for the current quarter hour
-- [ ] Check the cached page on Vercel (cache headers, revalidation)
+- [x] Check the cached page on Vercel: a page older than five minutes is served once more and rendered again in the background
 
 **Done when:** with JavaScript disabled, the start page shows today's chart and a recommendation.
 
