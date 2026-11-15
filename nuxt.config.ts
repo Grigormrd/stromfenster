@@ -30,6 +30,8 @@ export default defineNuxtConfig({
     // Rendered on the server, cached by Vercel, and rendered again in the
     // background at most every five minutes.
     "/": { isr: 300 },
+    // Text and tables that only change with a deployment.
+    "/methodology": { prerender: true },
   },
 
   app: {

@@ -28,7 +28,7 @@ export interface Dashboard {
   currentPrice: number | null;
   /** One entry per duration, for windows starting with the next quarter hour. */
   recommendations: Recommendation[];
-  /** Whether tomorrow's prices have been published (around 13:00 on the day before). */
+  /** Whether tomorrow's prices have been published (in the early afternoon of the day before). */
   hasTomorrow: boolean;
   /** Slots of today: where tomorrow begins on the timeline. */
   todaySlots: number;

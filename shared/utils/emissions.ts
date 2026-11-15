@@ -45,7 +45,7 @@ export const EMISSION_FACTORS: Record<GenerationSeriesId, EmissionFactor> = {
   generation_other_conventional: {
     gramsPerKwh: 860,
     basis: "stand-in",
-    note: "Oil, fossil waste, mine gas and others. The source has no value for this group; the hard coal value is used in its place.",
+    note: "Mineral oil, waste, gases from coal and steel production, and other fuels. The source has no value for this group; the hard coal value is used in its place.",
   },
   generation_pumped_storage: {
     gramsPerKwh: 0,
