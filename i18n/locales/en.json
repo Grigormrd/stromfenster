@@ -1,0 +1,151 @@
+{
+  "site": {
+    "title": "Stromfenster: when is electricity cheap and clean?",
+    "description": "Stromfenster shows when electricity in Germany is cheap and clean, based on day-ahead prices and the generation mix.",
+    "question": "When is electricity in Germany cheap and clean?",
+    "intro": "Day-ahead prices and the expected share of wind and solar, for today and tomorrow."
+  },
+  "nav": {
+    "home": "← Stromfenster",
+    "methodology": "How these figures are calculated",
+    "switchLanguage": "Deutsch"
+  },
+  "states": {
+    "unavailableTitle": "The data is not available right now",
+    "unavailableText": "The service that provides prices and generation data did not answer. Please try again in a few minutes.",
+    "stale": "There is no price for the current quarter hour. The figures below may be out of date."
+  },
+  "window": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "sameDay": "{day} {from}–{to}",
+    "overnight": "Today {from} – tomorrow {to}"
+  },
+  "best": {
+    "heading": "When should I run it?",
+    "runsFor": "It runs for",
+    "hours": "{n} h",
+    "cheapest": "Cheapest",
+    "cleanest": "Most wind and solar",
+    "onAverage": "{price} on average",
+    "now": "now {price}",
+    "ofUse": "{share} of electricity use, expected",
+    "nonePrice": "No window of {n} h is left in the prices published so far.",
+    "noneForecast": "No window of {n} h is left in the forecasts published so far.",
+    "tomorrowNote": "Tomorrow's prices are published in the early afternoon. Until then the cheapest window is within today."
+  },
+  "priceNote": {
+    "text": "These are wholesale prices. A household pays them only with a dynamic tariff, and then with taxes, levies and grid fees on top.",
+    "link": "What the price includes"
+  },
+  "charts": {
+    "hour": "Hour",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "now": "now",
+    "noValue": "no value",
+    "dayLabel": "{day}, {weekday}",
+    "bandLabel": "{label} {n} h",
+    "price": {
+      "title": "Price",
+      "subtitle": "Day-ahead wholesale price in ct/kWh, per quarter hour. Without taxes, levies and grid fees.",
+      "table": "Show the prices as a table",
+      "aria": "Line chart of the day-ahead price for today and tomorrow. The values are in the table below.",
+      "band": "Cheapest",
+      "caption": "Hourly mean in ct/kWh"
+    },
+    "share": {
+      "title": "Wind and solar",
+      "subtitle": "Expected share of wind and solar in electricity use, from the forecasts, per quarter hour.",
+      "table": "Show the shares as a table",
+      "aria": "Line chart of the expected share of wind and solar for today and tomorrow. The values are in the table below.",
+      "band": "Most wind and solar",
+      "caption": "Hourly mean"
+    },
+    "mix": {
+      "title": "Generation today",
+      "subtitle": "Measured net generation in GW, per quarter hour. Values arrive one to two hours late.",
+      "table": "Show the generation as a table",
+      "aria": "Stacked area chart of today's electricity generation by source. The values are in the table below.",
+      "caption": "Hourly mean in GW, and estimated CO₂ in g/kWh",
+      "co2": "CO₂",
+      "renewable": "Renewable: {share}"
+    }
+  },
+  "figures": {
+    "co2Latest": "CO₂ per kWh, latest",
+    "co2Today": "CO₂ per kWh, today so far",
+    "renewablesLatest": "Renewables, latest",
+    "estimate": "{time}, estimate",
+    "germanMix": "German mix in {year}: {value}",
+    "shareOfGeneration": "{time}, share of generation",
+    "source": "CO₂ is estimated from the generation mix.",
+    "link": "How it is estimated"
+  },
+  "footer": {
+    "day": "{weekday}, {date}",
+    "asOf": "data as of {time}",
+    "zone": "all times in German time",
+    "data": "Data:"
+  },
+  "mix": {
+    "other": "Other",
+    "coal": "Coal",
+    "gas": "Gas",
+    "other_renewables": "Biomass and hydro",
+    "wind": "Wind",
+    "solar": "Solar"
+  },
+  "series": {
+    "price_day_ahead": "Day-ahead price",
+    "generation_biomass": "Biomass",
+    "generation_hydro": "Hydropower",
+    "generation_wind_offshore": "Wind offshore",
+    "generation_wind_onshore": "Wind onshore",
+    "generation_solar": "Solar",
+    "generation_other_renewables": "Other renewables",
+    "generation_lignite": "Lignite",
+    "generation_hard_coal": "Hard coal",
+    "generation_gas": "Natural gas",
+    "generation_pumped_storage": "Pumped storage",
+    "generation_other_conventional": "Other conventional",
+    "load": "Load",
+    "forecast_load": "Load forecast",
+    "forecast_wind_onshore": "Wind onshore forecast",
+    "forecast_wind_offshore": "Wind offshore forecast",
+    "forecast_solar": "Solar forecast"
+  },
+  "factors": {
+    "caption": "Direct CO₂ emissions in grams per kWh of electricity",
+    "series": "Series",
+    "unit": "g/kWh",
+    "basisHeading": "Basis",
+    "note": "Note",
+    "basis": {
+      "published": "Published",
+      "stand-in": "Stand-in",
+      "zero": "Counted as zero"
+    },
+    "notes": {
+      "generation_other_conventional": "Mineral oil, waste, gases from coal and steel production, and other fuels. The source has no value for this group; the hard coal value is used in its place.",
+      "generation_pumped_storage": "The electricity was generated, and counted, when the water was pumped up.",
+      "generation_biomass": "The source counts no CO₂ for renewable fuels.",
+      "generation_other_renewables": "The source counts no CO₂ for renewable fuels.",
+      "generation_hydro": "No combustion.",
+      "generation_wind_onshore": "No combustion.",
+      "generation_wind_offshore": "No combustion.",
+      "generation_solar": "No combustion."
+    }
+  },
+  "groups": {
+    "group": "Group",
+    "series": "Series on SMARD",
+    "renewable": "Renewable",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "methodology": {
+    "title": "How the figures are calculated · Stromfenster",
+    "description": "Where the data of Stromfenster comes from, what is measured, what is estimated, and what is left out."
+  }
+}

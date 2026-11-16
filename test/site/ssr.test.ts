@@ -76,14 +76,27 @@ async function startSite(dataApiUrl: string) {
   throw new Error("The built website did not start.");
 }
 
-const priceText = (value: number) =>
-  `${new Intl.NumberFormat("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)} ct/kWh`;
+const BASE = "https://stromfenster.vercel.app";
 
-describe("the start page as the server sends it", () => {
+const priceText = (value: number, language: "de-DE" | "en-GB") =>
+  `${new Intl.NumberFormat(language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)} ct/kWh`;
+
+const dashboard = buildDashboard(
+  readDayFixture("2026-11-14"),
+  readDayFixture("2026-11-15"),
+  API_RECORDED_AT,
+);
+
+describe("the website as the server sends it", () => {
   let api: Awaited<ReturnType<typeof startApi>>;
   let site: Awaited<ReturnType<typeof startSite>>;
   let response: Response;
   let html: string;
+
+  const get = async (path: string) => {
+    const page = await fetch(`${site.url}${path}`);
+    return { status: page.status, text: await page.text() };
+  };
 
   beforeAll(async () => {
     if (!existsSync(SERVER)) {
@@ -100,86 +113,119 @@ describe("the start page as the server sends it", () => {
     await api?.close();
   });
 
-  it("answers with a complete page", () => {
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toContain("text/html");
-    expect(html).toContain('<html  lang="en"');
-    expect(html.match(/<h1[^>]*>Stromfenster<\/h1>/g)).toHaveLength(1);
-    expect(html).toContain("<title>Stromfenster: when is electricity cheap and clean?</title>");
+  describe("the start page in German, at the root", () => {
+    it("answers with a complete page", () => {
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("text/html");
+      expect(html).toMatch(/<html[^>]* lang="de-DE"/);
+      expect(html.match(/<h1[^>]*>Stromfenster<\/h1>/g)).toHaveLength(1);
+      expect(html).toContain("<title>Stromfenster: Wann ist Strom günstig und sauber?</title>");
+    });
+
+    it("names both languages and the canonical address in its head", () => {
+      expect(html).toMatch(new RegExp(`<link[^>]*rel="canonical"[^>]*href="${BASE}"`));
+      expect(html).toMatch(new RegExp(`<link[^>]*href="${BASE}"[^>]*hreflang="de-DE"`));
+      expect(html).toMatch(new RegExp(`<link[^>]*href="${BASE}/en"[^>]*hreflang="en-GB"`));
+      expect(html).toMatch(new RegExp(`<link[^>]*href="${BASE}"[^>]*hreflang="x-default"`));
+    });
+
+    it("contains the recommendation for every duration", () => {
+      const answers = [...html.matchAll(/class="when"[^>]*>([^<]+)</g)].map((match) => match[1]);
+
+      expect(answers).toHaveLength(8);
+      expect(answers).toContain("Morgen 10:45–12:45");
+      for (const { cheapest } of dashboard.recommendations) {
+        expect(html).toContain(`im Schnitt ${priceText(cheapest!.average, "de-DE")}`);
+      }
+      expect(html).toContain(`jetzt ${priceText(dashboard.currentPrice!, "de-DE")}`);
+    });
+
+    it("contains the charts as SVG, with their lines", () => {
+      expect(html.match(/<svg[^>]*role="img"/g)).toHaveLength(6);
+      // Price and share, each wide and narrow.
+      expect(html.match(/<path[^>]*class="line"/g)).toHaveLength(4);
+      // Six groups of generation, wide and narrow.
+      expect(html.match(/<path[^>]*class="band band--/g)).toHaveLength(12);
+      expect(html).toContain("Am günstigsten, 2 Std.");
+      expect(html).toContain("Am meisten Wind und Sonne, 2 Std.");
+    });
+
+    it("lets the duration be chosen without JavaScript", async () => {
+      // Radio buttons, two hours checked ...
+      expect(html.match(/<input[^>]*name="duration"[^>]*>/g)).toHaveLength(4);
+      expect(html.match(/<input[^>]*name="duration"[^>]*checked[^>]*>/g)).toHaveLength(1);
+      expect(html).toMatch(/<input[^>]*id="duration-2"[^>]*checked/);
+
+      // ... and a style rule that shows what belongs to the checked one.
+      const stylesheets = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(
+        (match) => match[1]!,
+      );
+      const css = [
+        html,
+        ...(await Promise.all(
+          stylesheets.map(async (href) => (await fetch(new URL(href, site.url))).text()),
+        )),
+      ].join("\n");
+      expect(css).toMatch(/:has\(#duration-2:checked\) \[data-duration=['"]?2['"]?\]/);
+      expect(css).toMatch(/\[data-duration\]\s*\{\s*display:\s*none/);
+    });
+
+    it("contains a table for every chart", () => {
+      expect(html.match(/<table/g)).toHaveLength(3);
+      expect(html).toContain("Stundenmittel in ct/kWh");
+    });
+
+    it("contains the CO₂ estimate and the note on wholesale prices", () => {
+      expect(html).toContain("CO₂ je kWh, heute bisher");
+      expect(html).toMatch(/<dd[^>]*>\d+ g\/kWh<\/dd>/);
+      expect(html).toContain("Deutscher Strommix 2024: 363 g/kWh");
+      expect(html).toContain("Das sind Großhandelspreise.");
+      expect(html).toContain('href="/methodik#co2"');
+    });
   });
 
-  it("contains the recommendation for every duration", () => {
-    const dashboard = buildDashboard(
-      readDayFixture("2026-11-14"),
-      readDayFixture("2026-11-15"),
-      API_RECORDED_AT,
-    );
-    const answers = [...html.matchAll(/class="when"[^>]*>([^<]+)</g)].map((match) => match[1]);
+  describe("the start page in English, under /en", () => {
+    it("answers in English with its own canonical address", async () => {
+      const { status, text } = await get("/en");
 
-    expect(answers).toHaveLength(8);
-    expect(answers).toContain("Tomorrow 10:45–12:45");
-    for (const { cheapest } of dashboard.recommendations) {
-      expect(html).toContain(`${priceText(cheapest!.average)} on average`);
-    }
-    expect(html).toContain(`now ${priceText(dashboard.currentPrice!)}`);
+      expect(status).toBe(200);
+      expect(text).toMatch(/<html[^>]* lang="en-GB"/);
+      expect(text).toContain("<title>Stromfenster: when is electricity cheap and clean?</title>");
+      expect(text).toMatch(new RegExp(`<link[^>]*rel="canonical"[^>]*href="${BASE}/en"`));
+      expect(text).toContain("Tomorrow 10:45–12:45");
+      expect(text).toContain(`now ${priceText(dashboard.currentPrice!, "en-GB")}`);
+      expect(text).toContain('href="/en/methodology#co2"');
+    });
   });
 
-  it("contains the charts as SVG, with their lines", () => {
-    expect(html.match(/<svg[^>]*role="img"/g)).toHaveLength(6);
-    // Price and share, each wide and narrow.
-    expect(html.match(/<path[^>]*class="line"/g)).toHaveLength(4);
-    // Six groups of generation, wide and narrow.
-    expect(html.match(/<path[^>]*class="band band--/g)).toHaveLength(12);
-    expect(html).toContain("Cheapest 2 h");
-    expect(html).toContain("Most wind and solar 2 h");
-  });
+  describe("the methodology", () => {
+    it("is served in German and in English, with the factors and their source", async () => {
+      const source =
+        'href="https://www.umweltbundesamt.de/publikationen/entwicklung-der-spezifischen-treibhausgas-11"';
+      for (const [path, heading, lignite] of [
+        ["/methodik", "So werden die Zahlen berechnet", "1.119"],
+        ["/en/methodology", "How the figures are calculated", "1,119"],
+      ] as const) {
+        const { status, text } = await get(path);
 
-  it("lets the duration be chosen without JavaScript", async () => {
-    // Radio buttons, two hours checked ...
-    expect(html.match(/<input[^>]*name="duration"[^>]*>/g)).toHaveLength(4);
-    expect(html.match(/<input[^>]*name="duration"[^>]*checked[^>]*>/g)).toHaveLength(1);
-    expect(html).toMatch(/<input[^>]*id="duration-2"[^>]*checked/);
+        expect(status, path).toBe(200);
+        expect(text.match(new RegExp(`<h1[^>]*>${heading}</h1>`, "g"))).toHaveLength(1);
+        expect(text).toContain(lignite);
+        expect(text).toContain("Climate Change 13/2025");
+        expect(text).toContain(source);
+        expect(text).toContain('id="co2"');
+        expect(text).toContain('id="prices"');
+      }
+    });
 
-    // ... and a style rule that shows what belongs to the checked one.
-    const stylesheets = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(
-      (match) => match[1]!,
-    );
-    const css = [
-      html,
-      ...(await Promise.all(
-        stylesheets.map(async (href) => (await fetch(new URL(href, site.url))).text()),
-      )),
-    ].join("\n");
-    expect(css).toMatch(/:has\(#duration-2:checked\) \[data-duration=['"]?2['"]?\]/);
-    expect(css).toMatch(/\[data-duration\]\s*\{\s*display:\s*none/);
-  });
+    it("is not answered under the address of the other language", async () => {
+      for (const path of ["/methodology", "/en/methodik"]) {
+        const page = await fetch(`${site.url}${path}`);
+        await page.body?.cancel();
 
-  it("contains a table for every chart", () => {
-    expect(html.match(/<table/g)).toHaveLength(3);
-    expect(html).toContain("Hourly mean in ct/kWh");
-  });
-
-  it("contains the CO₂ estimate and the note on wholesale prices", () => {
-    expect(html).toContain("CO₂ per kWh, today so far");
-    expect(html).toMatch(/<dd[^>]*>\d+ g\/kWh<\/dd>/);
-    expect(html).toContain("German mix in 2024: 363 g/kWh");
-    expect(html).toContain("These are wholesale prices.");
-    expect(html).toContain('href="/methodology#co2"');
-  });
-
-  it("serves the methodology page with the emission factors and their source", async () => {
-    const page = await fetch(`${site.url}/methodology`);
-    const text = await page.text();
-
-    expect(page.status).toBe(200);
-    expect(text.match(/<h1[^>]*>How the figures are calculated<\/h1>/g)).toHaveLength(1);
-    expect(text).toContain("1,119");
-    expect(text).toContain("Climate Change 13/2025");
-    expect(text).toContain(
-      'href="https://www.umweltbundesamt.de/publikationen/entwicklung-der-spezifischen-treibhausgas-11"',
-    );
-    expect(text).toContain('id="co2"');
-    expect(text).toContain('id="prices"');
+        expect(page.status, path).toBe(404);
+      }
+    });
   });
 });
 
@@ -198,7 +244,7 @@ describe("the start page when the data API cannot be reached", () => {
   afterAll(() => site?.stop());
 
   it("says that the data is unavailable", () => {
-    expect(html).toContain("The data is not available right now");
+    expect(html).toContain("Die Daten sind gerade nicht verfügbar");
     expect(html).not.toContain("<svg");
   });
 

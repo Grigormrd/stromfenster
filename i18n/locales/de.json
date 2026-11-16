@@ -1,0 +1,151 @@
+{
+  "site": {
+    "title": "Stromfenster: Wann ist Strom günstig und sauber?",
+    "description": "Stromfenster zeigt, wann Strom in Deutschland günstig und sauber ist, anhand der Day-Ahead-Preise und des Erzeugungsmixes.",
+    "question": "Wann ist Strom in Deutschland günstig und sauber?",
+    "intro": "Day-Ahead-Preise und der erwartete Anteil von Wind und Sonne, für heute und morgen."
+  },
+  "nav": {
+    "home": "← Stromfenster",
+    "methodology": "So werden die Zahlen berechnet",
+    "switchLanguage": "English"
+  },
+  "states": {
+    "unavailableTitle": "Die Daten sind gerade nicht verfügbar",
+    "unavailableText": "Der Dienst, der Preise und Erzeugungsdaten liefert, hat nicht geantwortet. Bitte in ein paar Minuten noch einmal versuchen.",
+    "stale": "Für die aktuelle Viertelstunde liegt kein Preis vor. Die Angaben unten sind möglicherweise veraltet."
+  },
+  "window": {
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "sameDay": "{day} {from}–{to}",
+    "overnight": "Heute {from} – morgen {to}"
+  },
+  "best": {
+    "heading": "Wann soll ich das Gerät einschalten?",
+    "runsFor": "Laufzeit",
+    "hours": "{n} Std.",
+    "cheapest": "Am günstigsten",
+    "cleanest": "Am meisten Wind und Sonne",
+    "onAverage": "im Schnitt {price}",
+    "now": "jetzt {price}",
+    "ofUse": "{share} des Stromverbrauchs, erwartet",
+    "nonePrice": "In den bisher veröffentlichten Preisen ist kein Fenster von {n} Std. mehr frei.",
+    "noneForecast": "In den bisher veröffentlichten Prognosen ist kein Fenster von {n} Std. mehr frei.",
+    "tomorrowNote": "Die Preise für morgen werden am frühen Nachmittag veröffentlicht. Bis dahin liegt das günstigste Fenster im heutigen Tag."
+  },
+  "priceNote": {
+    "text": "Das sind Großhandelspreise. Ein Haushalt zahlt sie nur mit einem dynamischen Tarif, und dann zuzüglich Steuern, Abgaben und Netzentgelten.",
+    "link": "Was im Preis enthalten ist"
+  },
+  "charts": {
+    "hour": "Stunde",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "now": "jetzt",
+    "noValue": "kein Wert",
+    "dayLabel": "{day}, {weekday}",
+    "bandLabel": "{label}, {n} Std.",
+    "price": {
+      "title": "Preis",
+      "subtitle": "Day-Ahead-Großhandelspreis in ct/kWh, je Viertelstunde. Ohne Steuern, Abgaben und Netzentgelte.",
+      "table": "Preise als Tabelle anzeigen",
+      "aria": "Liniendiagramm des Day-Ahead-Preises für heute und morgen. Die Werte stehen in der Tabelle darunter.",
+      "band": "Am günstigsten",
+      "caption": "Stundenmittel in ct/kWh"
+    },
+    "share": {
+      "title": "Wind und Sonne",
+      "subtitle": "Erwarteter Anteil von Wind und Sonne am Stromverbrauch, aus den Prognosen, je Viertelstunde.",
+      "table": "Anteile als Tabelle anzeigen",
+      "aria": "Liniendiagramm des erwarteten Anteils von Wind und Sonne für heute und morgen. Die Werte stehen in der Tabelle darunter.",
+      "band": "Am meisten Wind und Sonne",
+      "caption": "Stundenmittel"
+    },
+    "mix": {
+      "title": "Erzeugung heute",
+      "subtitle": "Gemessene Nettostromerzeugung in GW, je Viertelstunde. Die Werte kommen ein bis zwei Stunden verzögert.",
+      "table": "Erzeugung als Tabelle anzeigen",
+      "aria": "Gestapeltes Flächendiagramm der heutigen Stromerzeugung nach Energieträgern. Die Werte stehen in der Tabelle darunter.",
+      "caption": "Stundenmittel in GW und geschätztes CO₂ in g/kWh",
+      "co2": "CO₂",
+      "renewable": "Erneuerbar: {share}"
+    }
+  },
+  "figures": {
+    "co2Latest": "CO₂ je kWh, zuletzt",
+    "co2Today": "CO₂ je kWh, heute bisher",
+    "renewablesLatest": "Erneuerbare, zuletzt",
+    "estimate": "{time}, Schätzung",
+    "germanMix": "Deutscher Strommix {year}: {value}",
+    "shareOfGeneration": "{time}, Anteil an der Erzeugung",
+    "source": "CO₂ ist aus dem Erzeugungsmix geschätzt.",
+    "link": "So wird geschätzt"
+  },
+  "footer": {
+    "day": "{weekday}, {date}",
+    "asOf": "Datenstand {time}",
+    "zone": "alle Zeiten in deutscher Zeit",
+    "data": "Daten:"
+  },
+  "mix": {
+    "other": "Sonstige",
+    "coal": "Kohle",
+    "gas": "Erdgas",
+    "other_renewables": "Biomasse und Wasser",
+    "wind": "Wind",
+    "solar": "Sonne"
+  },
+  "series": {
+    "price_day_ahead": "Day-Ahead-Preis",
+    "generation_biomass": "Biomasse",
+    "generation_hydro": "Wasserkraft",
+    "generation_wind_offshore": "Wind offshore",
+    "generation_wind_onshore": "Wind onshore",
+    "generation_solar": "Photovoltaik",
+    "generation_other_renewables": "Sonstige Erneuerbare",
+    "generation_lignite": "Braunkohle",
+    "generation_hard_coal": "Steinkohle",
+    "generation_gas": "Erdgas",
+    "generation_pumped_storage": "Pumpspeicher",
+    "generation_other_conventional": "Sonstige Konventionelle",
+    "load": "Stromverbrauch",
+    "forecast_load": "Verbrauchsprognose",
+    "forecast_wind_onshore": "Prognose Wind onshore",
+    "forecast_wind_offshore": "Prognose Wind offshore",
+    "forecast_solar": "Prognose Photovoltaik"
+  },
+  "factors": {
+    "caption": "Direkte CO₂-Emissionen in Gramm je kWh Strom",
+    "series": "Energieträger",
+    "unit": "g/kWh",
+    "basisHeading": "Grundlage",
+    "note": "Anmerkung",
+    "basis": {
+      "published": "Veröffentlicht",
+      "stand-in": "Ersatzwert",
+      "zero": "Mit null angesetzt"
+    },
+    "notes": {
+      "generation_other_conventional": "Mineralöl, Abfall, Gase aus der Kohle- und Stahlerzeugung und weitere Brennstoffe. Die Quelle nennt für diese Gruppe keinen Wert; an seiner Stelle steht der Wert für Steinkohle.",
+      "generation_pumped_storage": "Der Strom wurde erzeugt und gezählt, als das Wasser hochgepumpt wurde.",
+      "generation_biomass": "Die Quelle rechnet erneuerbaren Brennstoffen kein CO₂ an.",
+      "generation_other_renewables": "Die Quelle rechnet erneuerbaren Brennstoffen kein CO₂ an.",
+      "generation_hydro": "Keine Verbrennung.",
+      "generation_wind_onshore": "Keine Verbrennung.",
+      "generation_wind_offshore": "Keine Verbrennung.",
+      "generation_solar": "Keine Verbrennung."
+    }
+  },
+  "groups": {
+    "group": "Gruppe",
+    "series": "Reihen bei SMARD",
+    "renewable": "Erneuerbar",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "methodology": {
+    "title": "So werden die Zahlen berechnet · Stromfenster",
+    "description": "Woher die Daten von Stromfenster stammen, was gemessen ist, was geschätzt ist und was fehlt."
+  }
+}

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-const description =
-  "Stromfenster shows when electricity in Germany is cheap and clean, based on day-ahead prices and the generation mix.";
+const { t } = useI18n();
+const format = useFormatters();
+const localePath = useLocalePath();
 
 useSeoMeta({
-  title: "Stromfenster: when is electricity cheap and clean?",
-  description,
+  title: () => t("site.title"),
+  description: () => t("site.description"),
 });
 
 const { dashboard, now, data, error, ready } = useDashboard();
@@ -27,8 +28,8 @@ function twoDayRows(values: (number | null)[]) {
   const view = dashboard.value!;
   const split = view.todaySlots;
   const starts = view.timeline.starts;
-  const first = hourlyMeans(values.slice(0, split), starts.slice(0, split));
-  const second = hourlyMeans(values.slice(split), starts.slice(split));
+  const first = hourlyMeans(values.slice(0, split), starts.slice(0, split), format.value);
+  const second = hourlyMeans(values.slice(split), starts.slice(split), format.value);
   return first.map((row, index) => ({
     time: row.time,
     today: row.value,
@@ -46,16 +47,11 @@ const shareRows = computed(() =>
 const mixRows = computed(() => {
   const view = dashboard.value;
   if (!view || !today.value) return [];
+  const measuredStarts = today.value.starts.slice(0, view.mixSlots);
   const perGroup = MIX_GROUPS.map((group) =>
-    hourlyMeans(
-      view.mix[group.id].slice(0, view.mixSlots),
-      today.value!.starts.slice(0, view.mixSlots),
-    ),
+    hourlyMeans(view.mix[group.id].slice(0, view.mixSlots), measuredStarts, format.value),
   );
-  const co2 = hourlyMeans(
-    view.co2.series.slice(0, view.mixSlots),
-    today.value.starts.slice(0, view.mixSlots),
-  );
+  const co2 = hourlyMeans(view.co2.series.slice(0, view.mixSlots), measuredStarts, format.value);
   return (perGroup[0] ?? []).map((row, index) => ({
     time: row.time,
     values: perGroup.map((rows) => rows[index]?.value ?? null),
@@ -67,70 +63,76 @@ const mixRows = computed(() => {
 const generationFigures = computed(() => {
   const view = dashboard.value;
   if (!view || !today.value || view.mixSlots === 0) return [];
+  const f = format.value;
   const latestStart = today.value.starts[view.mixSlots - 1]!;
-  const latestTime = `${formatTime(latestStart)}–${formatTime(latestStart + view.timeline.step)}`;
+  const time = `${f.time(latestStart)}–${f.time(latestStart + view.timeline.step)}`;
   return [
     {
-      label: "CO₂ per kWh, latest",
-      value: view.co2.latest === null ? "–" : formatGrams(view.co2.latest),
-      note: `${latestTime}, estimate`,
+      id: "co2-latest",
+      label: t("figures.co2Latest"),
+      value: view.co2.latest === null ? "–" : f.grams(view.co2.latest),
+      note: t("figures.estimate", { time }),
     },
     {
-      label: "CO₂ per kWh, today so far",
-      value: view.co2.todaySoFar === null ? "–" : formatGrams(view.co2.todaySoFar),
-      note: `German mix in ${EMISSION_SOURCE.year}: ${formatGrams(EMISSION_SOURCE.germanMix2024)}`,
+      id: "co2-today",
+      label: t("figures.co2Today"),
+      value: view.co2.todaySoFar === null ? "–" : f.grams(view.co2.todaySoFar),
+      note: t("figures.germanMix", {
+        year: EMISSION_SOURCE.year,
+        value: f.grams(EMISSION_SOURCE.germanMix2024),
+      }),
     },
     {
-      label: "Renewables, latest",
-      value: view.renewableShareLatest === null ? "–" : formatShare(view.renewableShareLatest),
-      note: `${latestTime}, share of generation`,
+      id: "renewables-latest",
+      label: t("figures.renewablesLatest"),
+      value: view.renewableShareLatest === null ? "–" : f.share(view.renewableShareLatest),
+      note: t("figures.shareOfGeneration", { time }),
     },
   ];
 });
 
 const legend = [...MIX_GROUPS].reverse();
-const updated = computed(() => (data.value ? formatTime(data.value.fetchedAt) : null));
-const dayLabel = computed(() => `${formatWeekday(now.value)}, ${formatDayMonth(now.value)}`);
+const updated = computed(() => (data.value ? format.value.time(data.value.fetchedAt) : null));
+const dayLabel = computed(() =>
+  t("footer.day", {
+    weekday: format.value.weekday(now.value),
+    date: format.value.dayMonth(now.value),
+  }),
+);
 
-const cell = (value: number | null, format: (value: number) => string) =>
-  value === null ? "–" : format(value);
+const cell = (value: number | null, show: (value: number) => string) =>
+  value === null ? "–" : show(value);
 </script>
 
 <template>
   <main class="dashboard">
     <header class="intro">
       <h1>Stromfenster</h1>
-      <p class="lead">When is electricity in Germany cheap and clean?</p>
-      <p class="secondary">
-        Day-ahead prices and the expected share of wind and solar, for today and tomorrow.
-      </p>
+      <p class="lead">{{ t("site.question") }}</p>
+      <p class="secondary">{{ t("site.intro") }}</p>
     </header>
 
     <section v-if="error || !dashboard" class="card unavailable" role="status">
-      <h2>The data is not available right now</h2>
-      <p class="secondary">
-        The service that provides prices and generation data did not answer. Please try again in a
-        few minutes.
-      </p>
+      <h2>{{ t("states.unavailableTitle") }}</h2>
+      <p class="secondary">{{ t("states.unavailableText") }}</p>
     </section>
 
     <template v-else>
-      <p v-if="dashboard.stale" class="card stale" role="status">
-        There is no price for the current quarter hour. The figures below may be out of date.
-      </p>
+      <p v-if="dashboard.stale" class="card stale" role="status">{{ t("states.stale") }}</p>
 
       <BestWindows :dashboard="dashboard" />
 
       <p class="price-note secondary">
-        These are wholesale prices. A household pays them only with a dynamic tariff, and then with
-        taxes, levies and grid fees on top.
-        <NuxtLink to="/methodology#prices">What the price includes</NuxtLink>
+        {{ t("priceNote.text") }}
+        <NuxtLink :to="localePath({ name: 'methodology', hash: '#prices' })">{{
+          t("priceNote.link")
+        }}</NuxtLink>
       </p>
 
       <ChartCard
-        title="Price"
-        subtitle="Day-ahead wholesale price in ct/kWh, per quarter hour. Without taxes, levies and grid fees."
-        table-label="Show the prices as a table"
+        :title="t('charts.price.title')"
+        :subtitle="t('charts.price.subtitle')"
+        :table-label="t('charts.price.table')"
       >
         <template #default="{ width, height }">
           <LineChart
@@ -141,32 +143,34 @@ const cell = (value: number | null, format: (value: number) => string) =>
             :windows="
               dashboard.recommendations.map((r) => ({ duration: r.duration, window: r.cheapest }))
             "
-            window-label="Cheapest"
+            :window-label="t('charts.price.band')"
             color="var(--price)"
-            :format="formatPrice"
-            :format-tick="(value: number) => String(value)"
+            :format="format.price"
+            :format-tick="format.whole"
             :width="width"
             :height="height"
-            label="Line chart of the day-ahead price for today and tomorrow. The values are in the table below."
+            :label="t('charts.price.aria')"
           />
         </template>
         <template #table>
           <table>
             <caption>
-              Hourly mean in ct/kWh
+              {{
+                t("charts.price.caption")
+              }}
             </caption>
             <thead>
               <tr>
-                <th scope="col">Hour</th>
-                <th scope="col">Today</th>
-                <th scope="col">Tomorrow</th>
+                <th scope="col">{{ t("charts.hour") }}</th>
+                <th scope="col">{{ t("charts.today") }}</th>
+                <th scope="col">{{ t("charts.tomorrow") }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in priceRows" :key="row.time">
                 <th scope="row">{{ row.time }}</th>
-                <td>{{ cell(row.today, formatDecimal) }}</td>
-                <td>{{ cell(row.tomorrow, formatDecimal) }}</td>
+                <td>{{ cell(row.today, format.decimal) }}</td>
+                <td>{{ cell(row.tomorrow, format.decimal) }}</td>
               </tr>
             </tbody>
           </table>
@@ -174,9 +178,9 @@ const cell = (value: number | null, format: (value: number) => string) =>
       </ChartCard>
 
       <ChartCard
-        title="Wind and solar"
-        subtitle="Expected share of wind and solar in electricity use, from the forecasts, per quarter hour."
-        table-label="Show the shares as a table"
+        :title="t('charts.share.title')"
+        :subtitle="t('charts.share.subtitle')"
+        :table-label="t('charts.share.table')"
       >
         <template #default="{ width, height }">
           <LineChart
@@ -187,32 +191,34 @@ const cell = (value: number | null, format: (value: number) => string) =>
             :windows="
               dashboard.recommendations.map((r) => ({ duration: r.duration, window: r.cleanest }))
             "
-            window-label="Most wind and solar"
+            :window-label="t('charts.share.band')"
             color="var(--clean)"
-            :format="formatShare"
-            :format-tick="formatShare"
+            :format="format.share"
+            :format-tick="format.share"
             :width="width"
             :height="height"
-            label="Line chart of the expected share of wind and solar for today and tomorrow. The values are in the table below."
+            :label="t('charts.share.aria')"
           />
         </template>
         <template #table>
           <table>
             <caption>
-              Hourly mean
+              {{
+                t("charts.share.caption")
+              }}
             </caption>
             <thead>
               <tr>
-                <th scope="col">Hour</th>
-                <th scope="col">Today</th>
-                <th scope="col">Tomorrow</th>
+                <th scope="col">{{ t("charts.hour") }}</th>
+                <th scope="col">{{ t("charts.today") }}</th>
+                <th scope="col">{{ t("charts.tomorrow") }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in shareRows" :key="row.time">
                 <th scope="row">{{ row.time }}</th>
-                <td>{{ cell(row.today, formatShare) }}</td>
-                <td>{{ cell(row.tomorrow, formatShare) }}</td>
+                <td>{{ cell(row.today, format.share) }}</td>
+                <td>{{ cell(row.tomorrow, format.share) }}</td>
               </tr>
             </tbody>
           </table>
@@ -221,25 +227,27 @@ const cell = (value: number | null, format: (value: number) => string) =>
 
       <ChartCard
         v-if="today"
-        title="Generation today"
-        subtitle="Measured net generation in GW, per quarter hour. Values arrive one to two hours late."
-        table-label="Show the generation as a table"
+        :title="t('charts.mix.title')"
+        :subtitle="t('charts.mix.subtitle')"
+        :table-label="t('charts.mix.table')"
       >
         <template #legend>
           <dl v-if="generationFigures.length" class="figures">
-            <div v-for="figure in generationFigures" :key="figure.label">
+            <div v-for="figure in generationFigures" :key="figure.id">
               <dt>{{ figure.label }}</dt>
               <dd>{{ figure.value }}</dd>
               <dd class="figure-note">{{ figure.note }}</dd>
             </div>
           </dl>
           <p class="figures-source secondary">
-            CO₂ is estimated from the generation mix.
-            <NuxtLink to="/methodology#co2">How it is estimated</NuxtLink>
+            {{ t("figures.source") }}
+            <NuxtLink :to="localePath({ name: 'methodology', hash: '#co2' })">{{
+              t("figures.link")
+            }}</NuxtLink>
           </p>
           <ul class="legend">
             <li v-for="group in legend" :key="group.id">
-              <span :class="`swatch swatch--${group.id}`" />{{ group.label }}
+              <span :class="`swatch swatch--${group.id}`" />{{ t(`mix.${group.id}`) }}
             </li>
           </ul>
         </template>
@@ -251,28 +259,32 @@ const cell = (value: number | null, format: (value: number) => string) =>
             :now-slot="today.nowSlot"
             :width="width"
             :height="height"
-            label="Stacked area chart of today's electricity generation by source. The values are in the table below."
+            :label="t('charts.mix.aria')"
           />
         </template>
         <template #table>
           <table>
             <caption>
-              Hourly mean in GW, and estimated CO₂ in g/kWh
+              {{
+                t("charts.mix.caption")
+              }}
             </caption>
             <thead>
               <tr>
-                <th scope="col">Hour</th>
-                <th v-for="group in MIX_GROUPS" :key="group.id" scope="col">{{ group.label }}</th>
-                <th scope="col">CO₂</th>
+                <th scope="col">{{ t("charts.hour") }}</th>
+                <th v-for="group in MIX_GROUPS" :key="group.id" scope="col">
+                  {{ t(`mix.${group.id}`) }}
+                </th>
+                <th scope="col">{{ t("charts.mix.co2") }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in mixRows" :key="row.time">
                 <th scope="row">{{ row.time }}</th>
                 <td v-for="(value, index) in row.values" :key="index">
-                  {{ cell(value, formatDecimal) }}
+                  {{ cell(value, format.decimal) }}
                 </td>
-                <td>{{ cell(row.co2, formatWhole) }}</td>
+                <td>{{ cell(row.co2, format.whole) }}</td>
               </tr>
             </tbody>
           </table>
@@ -282,14 +294,16 @@ const cell = (value: number | null, format: (value: number) => string) =>
 
     <footer class="secondary">
       <p>
-        {{ dayLabel }}<template v-if="updated"> · data as of {{ updated }}</template> · all times in
-        German time
+        {{ dayLabel
+        }}<template v-if="updated"> · {{ t("footer.asOf", { time: updated }) }}</template> ·
+        {{ t("footer.zone") }}
       </p>
       <p>
-        Data:
+        {{ t("footer.data") }}
         <a href="https://www.smard.de">Bundesnetzagentur | SMARD.de</a>,
         <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
-        · <NuxtLink to="/methodology">How these figures are calculated</NuxtLink>
+        · <NuxtLink :to="localePath('methodology')">{{ t("nav.methodology") }}</NuxtLink> ·
+        <LanguageSwitch />
       </p>
     </footer>
   </main>
