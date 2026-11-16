@@ -70,7 +70,8 @@
       "caption": "Stundenmittel in GW und geschätztes CO₂ in g/kWh",
       "co2": "CO₂",
       "renewable": "Erneuerbar: {share}"
-    }
+    },
+    "keyboard": "Mit den Pfeiltasten Viertelstunde für Viertelstunde lesen, mit Bild auf und Bild ab stundenweise, mit Pos1 und Ende zum Anfang und Ende."
   },
   "figures": {
     "co2Latest": "CO₂ je kWh, zuletzt",

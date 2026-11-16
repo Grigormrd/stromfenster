@@ -70,7 +70,8 @@
       "caption": "Hourly mean in GW, and estimated CO₂ in g/kWh",
       "co2": "CO₂",
       "renewable": "Renewable: {share}"
-    }
+    },
+    "keyboard": "Read it quarter hour by quarter hour with the arrow keys, by the hour with Page Up and Page Down, and jump to either end with Home and End."
   },
   "figures": {
     "co2Latest": "CO₂ per kWh, latest",
