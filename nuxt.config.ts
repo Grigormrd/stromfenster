@@ -11,7 +11,7 @@ export default defineNuxtConfig({
   compatibilityDate: "2026-11-01",
   devtools: { enabled: true },
 
-  modules: ["@nuxt/eslint"],
+  modules: ["@nuxt/eslint", "@nuxtjs/i18n"],
 
   css: ["~/assets/css/main.css"],
 
@@ -26,18 +26,33 @@ export default defineNuxtConfig({
     },
   },
 
+  // German at the root, English under /en (see docs/adr/0008).
+  i18n: {
+    defaultLocale: "de",
+    strategy: "prefix_except_default",
+    // No redirect by browser language: a cached page must be the same for
+    // everyone, and a link should open in the language it was shared in.
+    detectBrowserLanguage: false,
+    // Used for canonical and hreflang links (NUXT_PUBLIC_I18N_BASE_URL).
+    baseUrl: "https://stromfenster.vercel.app",
+    locales: [
+      { code: "de", language: "de-DE", name: "Deutsch", file: "de.json" },
+      { code: "en", language: "en-GB", name: "English", file: "en.json" },
+    ],
+    customRoutes: "config",
+    pages: {
+      methodology: { de: "/methodik", en: "/methodology" },
+    },
+  },
+
   routeRules: {
     // Rendered on the server, cached by Vercel, and rendered again in the
     // background at most every five minutes.
     "/": { isr: 300 },
+    "/en": { isr: 300 },
     // Text and tables that only change with a deployment.
-    "/methodology": { prerender: true },
-  },
-
-  app: {
-    head: {
-      htmlAttrs: { lang: "en" },
-    },
+    "/methodik": { prerender: true },
+    "/en/methodology": { prerender: true },
   },
 
   typescript: {

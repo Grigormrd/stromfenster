@@ -4,7 +4,7 @@
 
 **Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 3 (CO₂ and methodology). The start page shows prices, the expected share of wind and solar, today's generation with an estimate of its CO₂ emissions, and the best time window. A methodology page explains every figure. German, and the accessibility and performance passes, are still to come. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 4 (languages and SEO). The site is in German and English; one page per day, a sitemap and link previews are next. The accessibility and performance passes follow in Phase 5. See the [roadmap](docs/ROADMAP.md).
 
 ## Features
 
@@ -12,21 +12,22 @@
 - **Best window**: the cheapest time, and the time with the most wind and solar, to run something for 1 to 4 hours
 - **Generation today** by source, as it is measured, with an **estimate of its CO₂ emissions** from published emission factors ([ADR 7](docs/adr/0007-co2-estimate-from-the-generation-mix.md))
 - **A methodology page**: what is measured, what is estimated, what is left out, and where each number comes from
+- **German and English**: German at [/](https://stromfenster.vercel.app), English at [/en](https://stromfenster.vercel.app/en), with `hreflang` links between them ([ADR 8](docs/adr/0008-german-and-english.md))
 - **Server-rendered charts**: the charts and the recommendation are in the HTML and work without JavaScript, including the choice of duration ([ADR 6](docs/adr/0006-server-rendered-svg-charts.md))
 - **A table for every chart**, light and dark mode
 
-Planned: German and English, WCAG 2.1 AA checked with axe, one page per day.
+Planned: one page per day, a sitemap and link previews, WCAG 2.1 AA checked with axe.
 
 ## Tech stack
 
-| Area     | Choice                                                                       |
-| -------- | ---------------------------------------------------------------------------- |
-| Website  | Nuxt 4, Vue 3 (Composition API), TypeScript (strict), on Vercel with ISR     |
-| Charts   | SVG rendered by Vue on the server, no chart library, plain CSS               |
-| Pipeline | A Cloudflare Worker without a framework: Cron Trigger, D1 (SQLite), JSON API |
-| Data     | SMARD, the Bundesnetzagentur's market data platform                          |
-| Testing  | Vitest; the Worker with D1 in `workerd`                                      |
-| Quality  | ESLint, Prettier, GitHub Actions CI, Dependabot                              |
+| Area     | Choice                                                                                   |
+| -------- | ---------------------------------------------------------------------------------------- |
+| Website  | Nuxt 4, Vue 3 (Composition API), TypeScript (strict), `@nuxtjs/i18n`, on Vercel with ISR |
+| Charts   | SVG rendered by Vue on the server, no chart library, plain CSS                           |
+| Pipeline | A Cloudflare Worker without a framework: Cron Trigger, D1 (SQLite), JSON API             |
+| Data     | SMARD, the Bundesnetzagentur's market data platform                                      |
+| Testing  | Vitest; the Worker with D1 in `workerd`                                                  |
+| Quality  | ESLint, Prettier, GitHub Actions CI, Dependabot                                          |
 
 ## Architecture
 
@@ -78,12 +79,13 @@ Served by the pipeline Worker. Responses are JSON and may be read from any origi
 ```
 app/            The website (Nuxt)
   pages/        The start page and the methodology page
-  components/   Charts, the recommendation, the chart card with its table
+  components/   Charts, the recommendation, the chart card, the language switch, the methodology in both languages
   composables/  Data access and the clock of the page
   utils/        Chart geometry and formatting
 worker/         The data pipeline (Cloudflare Worker)
   src/          Import, SMARD client, database access, API routes
   migrations/   D1 schema
+i18n/locales/   Messages in German and English
 shared/         Used by both: series catalogue, Berlin calendar, best window, generation mix, CO₂ estimate
 scripts/        Records SMARD responses as test fixtures
 test/
@@ -150,13 +152,13 @@ Migrations run before the new Worker goes live, so it never meets an old schema.
 
 Each layer is tested where it runs. The only thing replaced is SMARD itself, by responses recorded from it ([`test/fixtures/smard`](test/fixtures/smard)).
 
-| Layer                 | Tool                      | What it covers                                                                                                                                                     |
-| --------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses; the summary of import runs                   |
-| Import, database, API | Vitest + `workerd` + D1   | The Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes                    |
-| Dashboard logic       | Vitest                    | Best window against a brute-force check, timeline, generation mix, CO₂ estimate, chart geometry, formatting; on days recorded from the deployed API                |
-| Pages and components  | Vitest + Nuxt environment | The pages and the charts rendered for the recorded evening; the methodology tables against the definitions the calculations use; the state when the data API fails |
-| Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript: recommendations, charts, the duration choice by CSS; 503 and `no-store` when the data API is down                                 |
+| Layer                 | Tool                      | What it covers                                                                                                                                                                                                                         |
+| --------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses; the summary of import runs                                                                                       |
+| Import, database, API | Vitest + `workerd` + D1   | The Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes                                                                                        |
+| Dashboard logic       | Vitest                    | Best window against a brute-force check, timeline, generation mix, CO₂ estimate, chart geometry, formatting; on days recorded from the deployed API                                                                                    |
+| Pages and components  | Vitest + Nuxt environment | Both languages: the pages and the charts rendered for the recorded evening, the methodology tables against the definitions the calculations use, the state when the data API fails                                                     |
+| Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript, in both languages: recommendations, charts, the duration choice by CSS, `hreflang` and canonical links, the methodology at its address in each language; 503 and `no-store` when the data API is down |
 
 End-to-end and accessibility tests with Playwright and axe-core follow in Phase 5.
 

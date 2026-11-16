@@ -3,7 +3,6 @@ import type { SeriesId } from "./series.ts";
 
 export interface MixGroup {
   id: "other" | "coal" | "gas" | "other_renewables" | "wind" | "solar";
-  label: string;
   series: readonly SeriesId[];
   renewable: boolean;
 }
@@ -16,30 +15,26 @@ export interface MixGroup {
 export const MIX_GROUPS: readonly MixGroup[] = [
   {
     id: "other",
-    label: "Other",
     series: ["generation_pumped_storage", "generation_other_conventional"],
     renewable: false,
   },
   {
     id: "coal",
-    label: "Coal",
     series: ["generation_lignite", "generation_hard_coal"],
     renewable: false,
   },
-  { id: "gas", label: "Gas", series: ["generation_gas"], renewable: false },
+  { id: "gas", series: ["generation_gas"], renewable: false },
   {
     id: "other_renewables",
-    label: "Biomass and hydro",
     series: ["generation_biomass", "generation_hydro", "generation_other_renewables"],
     renewable: true,
   },
   {
     id: "wind",
-    label: "Wind",
     series: ["generation_wind_onshore", "generation_wind_offshore"],
     renewable: true,
   },
-  { id: "solar", label: "Solar", series: ["generation_solar"], renewable: true },
+  { id: "solar", series: ["generation_solar"], renewable: true },
 ];
 
 export type Mix = Record<MixGroup["id"], (number | null)[]>;

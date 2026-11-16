@@ -31,6 +31,9 @@ const props = defineProps<{
   label: string;
 }>();
 
+const { t } = useI18n();
+const formatters = useFormatters();
+
 const margin = { top: 34, right: 12, bottom: 26, left: 40 };
 const plot = computed(() => ({
   left: margin.left,
@@ -65,7 +68,7 @@ const nearNow = (index: number) =>
 const hourTicks = computed(() => {
   const every = props.width >= 560 ? 6 : 12;
   return props.starts
-    .map((start, index) => ({ index, label: formatTime(start) }))
+    .map((start, index) => ({ index, label: formatters.value.time(start) }))
     .filter(({ label }) => label.endsWith(":00") && Number(label.slice(0, 2)) % every === 0)
     .filter(({ index }) => !nearNow(index));
 });
@@ -75,7 +78,10 @@ const days = computed(() =>
     .filter((index, position) => position === 0 || index < props.starts.length)
     .map((index, position) => ({
       index,
-      label: `${position === 0 ? "Today" : "Tomorrow"}, ${formatWeekday(props.starts[index]!)}`,
+      label: t("charts.dayLabel", {
+        day: t(position === 0 ? "charts.today" : "charts.tomorrow"),
+        weekday: formatters.value.weekday(props.starts[index]!),
+      }),
     })),
 );
 
@@ -96,7 +102,7 @@ const bands = computed(() =>
         width: right - left,
         anchor,
         labelX,
-        text: `${props.windowLabel} ${duration} h`,
+        text: t("charts.bandLabel", { label: props.windowLabel, n: duration }),
       };
     }),
 );
@@ -125,8 +131,8 @@ const tooltip = computed(() => {
   return {
     left,
     alignRight: left > 60,
-    time: `${index < props.daySplit ? "Today" : "Tomorrow"} ${formatTime(start)}–${formatTime(start + 900)}`,
-    value: value === null || value === undefined ? "no value" : props.format(value),
+    time: `${t(index < props.daySplit ? "charts.today" : "charts.tomorrow")} ${formatters.value.time(start)}–${formatters.value.time(start + 900)}`,
+    value: value === null || value === undefined ? t("charts.noValue") : props.format(value),
     x: (x.value(index) + x.value(index + 1)) / 2,
     y: value === null || value === undefined ? null : y.value(value),
   };
@@ -203,7 +209,9 @@ const tooltip = computed(() => {
       <!-- Now -->
       <g v-if="nowSlot >= 0" class="now">
         <line :x1="x(nowSlot)" :x2="x(nowSlot)" :y1="plot.top" :y2="plot.bottom" />
-        <text :x="x(nowSlot)" :y="plot.bottom + 16" text-anchor="middle">now</text>
+        <text :x="x(nowSlot)" :y="plot.bottom + 16" text-anchor="middle">
+          {{ t("charts.now") }}
+        </text>
       </g>
 
       <!-- Hover -->

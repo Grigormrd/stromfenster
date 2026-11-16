@@ -24,11 +24,11 @@ export interface EmissionFactor {
   gramsPerKwh: number;
   /**
    * `published`: the value is in the source. `stand-in`: the source has no
-   * value for this series and another one is used. `zero`: counted as zero,
-   * for the reason given in `note`.
+   * value for this series and another one is used. `zero`: counted as zero.
+   * The reason for a stand-in or a zero is given on the methodology page
+   * (`factors.notes` in the locale files).
    */
   basis: "published" | "stand-in" | "zero";
-  note: string;
 }
 
 /**
@@ -39,33 +39,22 @@ export interface EmissionFactor {
  * or transport of fuel, no construction, no other greenhouse gases.
  */
 export const EMISSION_FACTORS: Record<GenerationSeriesId, EmissionFactor> = {
-  generation_lignite: { gramsPerKwh: 1119, basis: "published", note: "Lignite" },
-  generation_hard_coal: { gramsPerKwh: 860, basis: "published", note: "Hard coal" },
-  generation_gas: { gramsPerKwh: 392, basis: "published", note: "Natural gas" },
-  generation_other_conventional: {
-    gramsPerKwh: 860,
-    basis: "stand-in",
-    note: "Mineral oil, waste, gases from coal and steel production, and other fuels. The source has no value for this group; the hard coal value is used in its place.",
-  },
-  generation_pumped_storage: {
-    gramsPerKwh: 0,
-    basis: "zero",
-    note: "The electricity was generated, and counted, when the water was pumped up.",
-  },
-  generation_biomass: {
-    gramsPerKwh: 0,
-    basis: "zero",
-    note: "The source counts no CO₂ for renewable fuels.",
-  },
-  generation_hydro: { gramsPerKwh: 0, basis: "zero", note: "No combustion." },
-  generation_wind_onshore: { gramsPerKwh: 0, basis: "zero", note: "No combustion." },
-  generation_wind_offshore: { gramsPerKwh: 0, basis: "zero", note: "No combustion." },
-  generation_solar: { gramsPerKwh: 0, basis: "zero", note: "No combustion." },
-  generation_other_renewables: {
-    gramsPerKwh: 0,
-    basis: "zero",
-    note: "The source counts no CO₂ for renewable fuels.",
-  },
+  generation_lignite: { gramsPerKwh: 1119, basis: "published" },
+  generation_hard_coal: { gramsPerKwh: 860, basis: "published" },
+  generation_gas: { gramsPerKwh: 392, basis: "published" },
+  // Mineral oil, waste, gases from coal and steel production, and other
+  // fuels. The source has no value for this group; hard coal stands in.
+  generation_other_conventional: { gramsPerKwh: 860, basis: "stand-in" },
+  // The electricity was generated, and counted, when the water was pumped up.
+  generation_pumped_storage: { gramsPerKwh: 0, basis: "zero" },
+  // The source counts no CO₂ for renewable fuels.
+  generation_biomass: { gramsPerKwh: 0, basis: "zero" },
+  generation_other_renewables: { gramsPerKwh: 0, basis: "zero" },
+  // No combustion.
+  generation_hydro: { gramsPerKwh: 0, basis: "zero" },
+  generation_wind_onshore: { gramsPerKwh: 0, basis: "zero" },
+  generation_wind_offshore: { gramsPerKwh: 0, basis: "zero" },
+  generation_solar: { gramsPerKwh: 0, basis: "zero" },
 };
 
 const GENERATION_IDS = Object.keys(EMISSION_FACTORS) as GenerationSeriesId[];

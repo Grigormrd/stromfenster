@@ -9,6 +9,7 @@ const today = readDayFixture("2026-11-14");
 const tomorrow = readDayFixture("2026-11-15");
 const dashboard = buildDashboard(today, tomorrow, API_RECORDED_AT);
 
+// The components render in English under /en; the pages test both languages.
 describe("LineChart", () => {
   const props = {
     starts: dashboard.timeline.starts,
@@ -21,15 +22,15 @@ describe("LineChart", () => {
     })),
     windowLabel: "Cheapest",
     color: "var(--price)",
-    format: formatPrice,
-    formatTick: (value: number) => String(value),
+    format: formattersFor("en-GB").price,
+    formatTick: formattersFor("en-GB").whole,
     width: 720,
     height: 280,
     label: "Price chart",
   };
 
   it("draws the series as one line with a wash under it", async () => {
-    const chart = await mountSuspended(LineChart, { props });
+    const chart = await mountSuspended(LineChart, { props, route: "/en" });
 
     expect(chart.find("svg").attributes("viewBox")).toBe("0 0 720 280");
     expect(chart.find("path.line").attributes("d")).toMatch(/^M40,/);
@@ -39,7 +40,7 @@ describe("LineChart", () => {
   });
 
   it("marks the best window of every duration, for CSS to choose from", async () => {
-    const chart = await mountSuspended(LineChart, { props });
+    const chart = await mountSuspended(LineChart, { props, route: "/en" });
     const bands = chart.findAll("g.band");
 
     expect(bands.map((band) => band.attributes("data-duration"))).toEqual(["1", "2", "3", "4"]);
@@ -55,7 +56,7 @@ describe("LineChart", () => {
   });
 
   it("labels both days, the axis from zero, and now", async () => {
-    const chart = await mountSuspended(LineChart, { props });
+    const chart = await mountSuspended(LineChart, { props, route: "/en" });
 
     expect(chart.findAll("text.day").map((text) => text.text())).toEqual([
       "Today, Saturday",
@@ -68,15 +69,16 @@ describe("LineChart", () => {
   it("leaves a gap in the line where values are missing", async () => {
     const values = [...dashboard.timeline.price];
     values.fill(null, 100, 110);
-    const chart = await mountSuspended(LineChart, { props: { ...props, values } });
+    const chart = await mountSuspended(LineChart, { props: { ...props, values }, route: "/en" });
 
     expect(chart.find("path.line").attributes("d")!.match(/M/g)).toHaveLength(2);
   });
 
   it("has fewer time labels when it is narrow", async () => {
-    const wide = await mountSuspended(LineChart, { props });
+    const wide = await mountSuspended(LineChart, { props, route: "/en" });
     const narrow = await mountSuspended(LineChart, {
       props: { ...props, width: 380, height: 250 },
+      route: "/en",
     });
 
     expect(narrow.findAll("g.time > text:not(.day)").length).toBeLessThan(
@@ -97,7 +99,7 @@ describe("MixChart", () => {
   };
 
   it("stacks the six groups from conventional at the bottom to solar on top", async () => {
-    const chart = await mountSuspended(MixChart, { props });
+    const chart = await mountSuspended(MixChart, { props, route: "/en" });
 
     expect(chart.findAll("path.band").map((band) => band.classes()[1])).toEqual([
       "band--other",
@@ -110,7 +112,7 @@ describe("MixChart", () => {
   });
 
   it("only draws the hours that have been measured", async () => {
-    const chart = await mountSuspended(MixChart, { props });
+    const chart = await mountSuspended(MixChart, { props, route: "/en" });
     const path = chart.find("path.band--wind").attributes("d")!;
     const rightEdge = Math.max(
       ...[...path.matchAll(/H([\d.]+)/g)].map((match) => Number(match[1])),
@@ -128,7 +130,10 @@ describe("BestWindows", () => {
     unpublished.series.price_day_ahead.fill(null);
     const morning = buildDashboard(today, unpublished, Date.parse("2026-11-14T08:00:00Z") / 1000);
 
-    const section = await mountSuspended(BestWindows, { props: { dashboard: morning } });
+    const section = await mountSuspended(BestWindows, {
+      props: { dashboard: morning },
+      route: "/en",
+    });
 
     expect(section.text()).toContain("Tomorrow's prices are published in the early afternoon");
     expect(section.find('[data-duration="2"] .when').text()).toMatch(/^Today /);
@@ -139,7 +144,7 @@ describe("BestWindows", () => {
     unpublished.series.price_day_ahead.fill(null);
     const late = buildDashboard(today, unpublished, Date.parse("2026-11-14T22:30:00Z") / 1000);
 
-    const section = await mountSuspended(BestWindows, { props: { dashboard: late } });
+    const section = await mountSuspended(BestWindows, { props: { dashboard: late }, route: "/en" });
 
     expect(section.find('[data-duration="4"]').text()).toContain(
       "No window of 4 h is left in the prices published so far.",

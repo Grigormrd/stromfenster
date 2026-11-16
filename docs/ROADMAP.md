@@ -53,9 +53,10 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 ## Phase 4: Languages and SEO
 
-- [ ] German and English with `@nuxtjs/i18n`, numbers and times formatted for `Europe/Berlin` on server and client
+- [x] German and English with `@nuxtjs/i18n`, numbers and times formatted for `Europe/Berlin` on server and client ([ADR 8](adr/0008-german-and-english.md))
 - [ ] One page per day; past days are cached permanently
-- [ ] `hreflang`, sitemap, structured data, link preview image
+- [x] `hreflang` and canonical links on every page
+- [ ] Sitemap, structured data, link preview image
 
 **Done when:** both languages have correct `hreflang` pairs, and a past day is served from the cache.
 

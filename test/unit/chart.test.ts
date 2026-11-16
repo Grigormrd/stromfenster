@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { linearScale, niceTicks, stepArea, stepBand, stepLine } from "../../app/utils/chart.ts";
-import {
-  formatDayMonth,
-  formatPrice,
-  formatShare,
-  formatTime,
-  formatWeekday,
-} from "../../app/utils/format.ts";
+import { formattersFor } from "../../app/utils/format.ts";
 
 describe("linearScale", () => {
   it("maps the domain onto the range", () => {
@@ -84,24 +78,38 @@ describe("step paths", () => {
 
 describe("formatting", () => {
   const seconds = (iso: string) => Date.parse(iso) / 1000;
+  const en = formattersFor("en-GB");
+  const de = formattersFor("de-DE");
 
-  it("shows times in Berlin, in winter and in summer", () => {
-    expect(formatTime(seconds("2026-11-14T20:30:00Z"))).toBe("21:30");
-    expect(formatTime(seconds("2026-07-01T20:30:00Z"))).toBe("22:30");
-  });
-
-  it("writes midnight as 00:00", () => {
-    expect(formatTime(seconds("2026-11-14T23:00:00Z"))).toBe("00:00");
+  it("shows times in Berlin, in winter and in summer, in both languages", () => {
+    for (const format of [en, de]) {
+      expect(format.time(seconds("2026-11-14T20:30:00Z"))).toBe("21:30");
+      expect(format.time(seconds("2026-07-01T20:30:00Z"))).toBe("22:30");
+      expect(format.time(seconds("2026-11-14T23:00:00Z"))).toBe("00:00");
+    }
   });
 
   it("names the day in Berlin, not in UTC", () => {
-    expect(formatWeekday(seconds("2026-11-14T23:30:00Z"))).toBe("Sunday");
-    expect(formatDayMonth(seconds("2026-11-14T23:30:00Z"))).toBe("15 November");
+    const lateEvening = seconds("2026-11-14T23:30:00Z");
+
+    expect(en.weekday(lateEvening)).toBe("Sunday");
+    expect(en.dayMonth(lateEvening)).toBe("15 November");
+    expect(de.weekday(lateEvening)).toBe("Sonntag");
+    expect(de.dayMonth(lateEvening)).toBe("15. November");
   });
 
-  it("formats prices and shares", () => {
-    expect(formatPrice(9.94)).toBe("9.9 ct/kWh");
-    expect(formatPrice(-1.25)).toBe("-1.3 ct/kWh");
-    expect(formatShare(0.766)).toBe("77 %");
+  it("uses each language's decimal and thousands separators", () => {
+    expect(en.price(9.94)).toBe("9.9 ct/kWh");
+    expect(de.price(9.94)).toBe("9,9 ct/kWh");
+    expect(en.price(-1.25)).toBe("-1.3 ct/kWh");
+    expect(de.price(-1.25)).toBe("-1,3 ct/kWh");
+    expect(en.grams(1119)).toBe("1,119 g/kWh");
+    expect(de.grams(1119)).toBe("1.119 g/kWh");
+    expect(en.share(0.766)).toBe("77 %");
+    expect(de.share(0.766)).toBe("77 %");
+  });
+
+  it("creates the formatters of a language once", () => {
+    expect(formattersFor("de-DE")).toBe(de);
   });
 });

@@ -19,6 +19,9 @@ const props = defineProps<{
   label: string;
 }>();
 
+const { t } = useI18n();
+const formatters = useFormatters();
+
 const margin = { top: 12, right: 12, bottom: 26, left: 40 };
 const plot = computed(() => ({
   left: margin.left,
@@ -68,7 +71,7 @@ const nearNow = (index: number) =>
 const hourTicks = computed(() => {
   const every = props.width >= 560 ? 3 : 6;
   return props.starts
-    .map((start, index) => ({ index, label: formatTime(start) }))
+    .map((start, index) => ({ index, label: formatters.value.time(start) }))
     .filter(({ label }) => label.endsWith(":00") && Number(label.slice(0, 2)) % every === 0)
     .filter(({ index }) => !nearNow(index));
 });
@@ -97,14 +100,14 @@ const tooltip = computed(() => {
     left,
     alignRight: left > 55,
     x: center,
-    time: `${formatTime(start)}–${formatTime(start + 900)}`,
+    time: `${formatters.value.time(start)}–${formatters.value.time(start + 900)}`,
     // Top of the stack first, as in the chart.
     rows: [...MIX_GROUPS].reverse().map((group) => ({
       id: group.id,
-      label: group.label,
-      value: `${formatDecimal(props.mix[group.id][index] ?? 0)} GW`,
+      label: t(`mix.${group.id}`),
+      value: `${formatters.value.decimal(props.mix[group.id][index] ?? 0)} GW`,
     })),
-    share: share === null ? null : formatShare(share),
+    share: share === null ? null : formatters.value.share(share),
   };
 });
 </script>
@@ -148,7 +151,9 @@ const tooltip = computed(() => {
 
       <g v-if="nowSlot >= 0 && nowSlot < starts.length" class="now">
         <line :x1="x(nowSlot)" :x2="x(nowSlot)" :y1="plot.top" :y2="plot.bottom" />
-        <text :x="x(nowSlot)" :y="plot.bottom + 16" text-anchor="middle">now</text>
+        <text :x="x(nowSlot)" :y="plot.bottom + 16" text-anchor="middle">
+          {{ t("charts.now") }}
+        </text>
       </g>
 
       <g v-if="tooltip" class="hover">
@@ -168,7 +173,9 @@ const tooltip = computed(() => {
         <span>{{ row.label }}</span>
         <strong>{{ row.value }}</strong>
       </span>
-      <span v-if="tooltip.share" class="tooltip-time">Renewable: {{ tooltip.share }}</span>
+      <span v-if="tooltip.share" class="tooltip-time">
+        {{ t("charts.mix.renewable", { share: tooltip.share }) }}
+      </span>
     </div>
   </div>
 </template>
