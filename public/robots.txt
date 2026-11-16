@@ -1,2 +1,4 @@
 User-Agent: *
 Disallow:
+
+Sitemap: https://stromfenster.vercel.app/sitemap.xml

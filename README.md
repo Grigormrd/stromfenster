@@ -4,7 +4,7 @@
 
 **Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 4 (languages and SEO). The site is in German and English; one page per day, a sitemap and link previews are next. The accessibility and performance passes follow in Phase 5. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 4 (languages and SEO). The site is in German and English, with one page per day, a sitemap, structured data and link previews. The accessibility and performance passes follow in Phase 5. See the [roadmap](docs/ROADMAP.md).
 
 ## Features
 
@@ -13,10 +13,12 @@
 - **Generation today** by source, as it is measured, with an **estimate of its CO₂ emissions** from published emission factors ([ADR 7](docs/adr/0007-co2-estimate-from-the-generation-mix.md))
 - **A methodology page**: what is measured, what is estimated, what is left out, and where each number comes from
 - **German and English**: German at [/](https://stromfenster.vercel.app), English at [/en](https://stromfenster.vercel.app/en), with `hreflang` links between them ([ADR 8](docs/adr/0008-german-and-english.md))
+- **One page per day**, e.g. [/tag/2026-11-15](https://stromfenster.vercel.app/tag/2026-11-15): prices with their lowest and highest quarter hour, generation, CO₂ and renewable share, with links to the days around it ([ADR 9](docs/adr/0009-day-pages-and-search.md))
+- **Found and shared well**: a sitemap in both languages, a schema.org `Dataset` on every data page, and a link preview image
 - **Server-rendered charts**: the charts and the recommendation are in the HTML and work without JavaScript, including the choice of duration ([ADR 6](docs/adr/0006-server-rendered-svg-charts.md))
 - **A table for every chart**, light and dark mode
 
-Planned: one page per day, a sitemap and link previews, WCAG 2.1 AA checked with axe.
+Planned: WCAG 2.1 AA checked with axe, Lighthouse on the production build.
 
 ## Tech stack
 
@@ -78,7 +80,7 @@ Served by the pipeline Worker. Responses are JSON and may be read from any origi
 
 ```
 app/            The website (Nuxt)
-  pages/        The start page and the methodology page
+  pages/        The start page, the methodology and one page per day
   components/   Charts, the recommendation, the chart card, the language switch, the methodology in both languages
   composables/  Data access and the clock of the page
   utils/        Chart geometry and formatting
@@ -87,7 +89,8 @@ worker/         The data pipeline (Cloudflare Worker)
   migrations/   D1 schema
 i18n/locales/   Messages in German and English
 shared/         Used by both: series catalogue, Berlin calendar, best window, generation mix, CO₂ estimate
-scripts/        Records SMARD responses as test fixtures
+server/         The sitemap (the website's only server route)
+scripts/        Records SMARD responses as test fixtures; renders the link preview image
 test/
   unit/         Plain unit tests
   nuxt/         Tests inside a Nuxt runtime

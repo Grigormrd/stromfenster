@@ -29,6 +29,11 @@ const props = defineProps<{
   height: number;
   /** Accessible name of the chart. */
   label: string;
+  /**
+   * Labels for the days, in order. Without them the days are "Today" and
+   * "Tomorrow", as on the start page.
+   */
+  dayNames?: string[];
 }>();
 
 const { t } = useI18n();
@@ -78,10 +83,12 @@ const days = computed(() =>
     .filter((index, position) => position === 0 || index < props.starts.length)
     .map((index, position) => ({
       index,
-      label: t("charts.dayLabel", {
-        day: t(position === 0 ? "charts.today" : "charts.tomorrow"),
-        weekday: formatters.value.weekday(props.starts[index]!),
-      }),
+      label:
+        props.dayNames?.[position] ??
+        t("charts.dayLabel", {
+          day: t(position === 0 ? "charts.today" : "charts.tomorrow"),
+          weekday: formatters.value.weekday(props.starts[index]!),
+        }),
     })),
 );
 
@@ -131,7 +138,7 @@ const tooltip = computed(() => {
   return {
     left,
     alignRight: left > 60,
-    time: `${t(index < props.daySplit ? "charts.today" : "charts.tomorrow")} ${formatters.value.time(start)}–${formatters.value.time(start + 900)}`,
+    time: `${props.dayNames ? "" : `${t(index < props.daySplit ? "charts.today" : "charts.tomorrow")} `}${formatters.value.time(start)}–${formatters.value.time(start + 900)}`,
     value: value === null || value === undefined ? t("charts.noValue") : props.format(value),
     x: (x.value(index) + x.value(index + 1)) / 2,
     y: value === null || value === undefined ? null : y.value(value),

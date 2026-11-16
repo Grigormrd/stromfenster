@@ -219,12 +219,131 @@ describe("the website as the server sends it", () => {
     });
 
     it("is not answered under the address of the other language", async () => {
-      for (const path of ["/methodology", "/en/methodik"]) {
+      const page = await fetch(`${site.url}/en/methodik`);
+      await page.body?.cancel();
+
+      expect(page.status).toBe(404);
+    });
+
+    it("sends the old English address to its new place", async () => {
+      // English was at the root for a day before German moved there.
+      const page = await fetch(`${site.url}/methodology`, { redirect: "manual" });
+      await page.body?.cancel();
+
+      expect(page.status).toBe(301);
+      expect(page.headers.get("location")).toBe("/en/methodology");
+    });
+  });
+
+  describe("the day pages", () => {
+    it("show a past day in German, with its figures, charts and neighbours", async () => {
+      const { status, text } = await get("/tag/2026-11-13");
+
+      expect(status).toBe(200);
+      expect(text).toMatch(/<html[^>]* lang="de-DE"/);
+      expect(text.match(/<h1[^>]*>Strom am Freitag, 13\. November 2026<\/h1>/g)).toHaveLength(1);
+      expect(text).toContain("Niedrigster Preis");
+      expect(text).toContain("258 g/kWh");
+      expect(text.match(/<svg[^>]*role="img"/g)).toHaveLength(4);
+      expect(text).toMatch(/<a[^>]*href="\/tag\/2026-11-12"[^>]*rel="prev"/);
+      expect(text).toMatch(/<a[^>]*href="\/tag\/2026-11-14"[^>]*rel="next"/);
+      expect(text).toMatch(
+        new RegExp(`<link[^>]*href="${BASE}/en/day/2026-11-13"[^>]*hreflang="en-GB"`),
+      );
+    });
+
+    it("show the same day in English", async () => {
+      const { status, text } = await get("/en/day/2026-11-13");
+
+      expect(status).toBe(200);
+      expect(text).toContain("Electricity on Friday, 13 November 2026");
+      expect(text).toMatch(
+        new RegExp(`<link[^>]*rel="canonical"[^>]*href="${BASE}/en/day/2026-11-13"`),
+      );
+    });
+
+    it("describe their data for search engines", async () => {
+      const { text } = await get("/tag/2026-11-13");
+      const json = /<script[^>]*type="application\/ld\+json"[^>]*>([^<]+)<\/script>/.exec(
+        text,
+      )?.[1];
+      const data = JSON.parse(json!);
+
+      expect(data["@type"]).toBe("Dataset");
+      expect(data.temporalCoverage).toBe("2026-11-13");
+      expect(data.isBasedOn.url).toBe("https://www.smard.de");
+      expect(data.isBasedOn.license).toBe("https://creativecommons.org/licenses/by/4.0/");
+    });
+
+    it.each(["/tag/2026-11-11", "/tag/2026-11-16", "/tag/2026-02-30", "/tag/heute"])(
+      "do not exist for %s",
+      async (path) => {
         const page = await fetch(`${site.url}${path}`);
         await page.body?.cancel();
 
-        expect(page.status, path).toBe(404);
+        expect(page.status).toBe(404);
+      },
+    );
+
+    it("are linked from the start page", () => {
+      expect(html).toContain('href="/tag/2026-11-13"');
+    });
+  });
+
+  describe("what search engines and link previews read", () => {
+    it("lists every page in both languages in the sitemap", async () => {
+      const page = await fetch(`${site.url}/sitemap.xml`);
+      const xml = await page.text();
+
+      expect(page.status).toBe(200);
+      expect(page.headers.get("content-type")).toContain("application/xml");
+      expect(xml).toContain(`<loc>${BASE}</loc>`);
+      expect(xml).toContain(`<loc>${BASE}/en/methodology</loc>`);
+      // Complete days up to yesterday: the 13th, not today (the 14th).
+      expect(xml).toContain(`<loc>${BASE}/tag/2026-11-13</loc>`);
+      expect(xml).not.toContain("2026-11-14");
+    });
+
+    it("points robots to the sitemap", async () => {
+      const { text } = await get("/robots.txt");
+
+      expect(text).toContain(`Sitemap: ${BASE}/sitemap.xml`);
+    });
+
+    it("gives every page a preview image, title and description", async () => {
+      for (const path of ["/", "/en", "/methodik", "/tag/2026-11-13"]) {
+        const { text } = await get(path);
+
+        expect(text, path).toMatch(
+          new RegExp(`<meta[^>]*property="og:image"[^>]*content="${BASE}/og.png"`),
+        );
+        expect(text, path).toMatch(/<meta[^>]*property="og:title"[^>]*content="[^"]+"/);
+        expect(text, path).toMatch(
+          /<meta[^>]*name="twitter:card"[^>]*content="summary_large_image"/,
+        );
       }
+    });
+
+    it("serves the preview image", async () => {
+      const image = await fetch(`${site.url}/og.png`);
+      const bytes = new Uint8Array(await image.arrayBuffer());
+
+      expect(image.status).toBe(200);
+      expect(image.headers.get("content-type")).toBe("image/png");
+      // PNG signature.
+      expect([...bytes.slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    });
+
+    it("describes the start page's data as a Dataset", () => {
+      const json = /<script[^>]*type="application\/ld\+json"[^>]*>([^<]+)<\/script>/.exec(
+        html,
+      )?.[1];
+      const data = JSON.parse(json!);
+
+      expect(data["@type"]).toBe("Dataset");
+      expect(data.inLanguage).toBe("de-DE");
+      expect(data.url).toBe(BASE);
+      expect(data.temporalCoverage).toBe("2026-11-12/..");
     });
   });
 });

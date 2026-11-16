@@ -86,7 +86,9 @@
     "day": "{weekday}, {date}",
     "asOf": "Datenstand {time}",
     "zone": "alle Zeiten in deutscher Zeit",
-    "data": "Daten:"
+    "data": "Daten:",
+    "pastDays": "Frühere Tage",
+    "yesterday": "gestern"
   },
   "mix": {
     "other": "Sonstige",
@@ -147,5 +149,42 @@
   "methodology": {
     "title": "So werden die Zahlen berechnet · Stromfenster",
     "description": "Woher die Daten von Stromfenster stammen, was gemessen ist, was geschätzt ist und was fehlt."
+  },
+  "day": {
+    "title": "{date}: Strompreis und Erzeugung · Stromfenster",
+    "description": "Day-Ahead-Preise, Stromerzeugung nach Energieträgern und geschätzte CO₂-Emissionen in Deutschland am {date}.",
+    "heading": "Strom am {date}",
+    "lead": "Day-Ahead-Preise und gemessene Erzeugung dieses Tages.",
+    "averagePrice": "Preis im Mittel",
+    "lowest": "Niedrigster Preis",
+    "highest": "Höchster Preis",
+    "at": "{from}–{to}",
+    "co2": "CO₂ je kWh, Tagesmittel",
+    "renewables": "Erneuerbare, Anteil am Tag",
+    "estimate": "Schätzung",
+    "shareOfGeneration": "Anteil an der Erzeugung",
+    "partial": "{measured} von {total} Viertelstunden gemessen",
+    "noPrice": "Für diesen Tag liegen keine Preise vor.",
+    "noGeneration": "Für diesen Tag liegen noch keine Messwerte zur Erzeugung vor.",
+    "otherDays": "Andere Tage",
+    "previous": "← {date}",
+    "next": "{date} →",
+    "priceSubtitle": "Day-Ahead-Großhandelspreis in ct/kWh, je Viertelstunde. Ohne Steuern, Abgaben und Netzentgelte.",
+    "priceAria": "Liniendiagramm des Day-Ahead-Preises an diesem Tag. Die Werte stehen in der Tabelle darunter.",
+    "priceCaption": "Stundenmittel in ct/kWh",
+    "price": "Preis",
+    "mixTitle": "Erzeugung",
+    "mixSubtitle": "Gemessene Nettostromerzeugung in GW, je Viertelstunde.",
+    "mixAria": "Gestapeltes Flächendiagramm der Stromerzeugung dieses Tages nach Energieträgern. Die Werte stehen in der Tabelle darunter."
+  },
+  "share": {
+    "imageAlt": "Stromfenster: Verlauf des Strompreises über einen Tag, mit dem günstigsten Zeitfenster markiert.",
+    "datasetName": "Strompreise, Erzeugung und CO₂ in Deutschland",
+    "datasetDay": "Strompreise, Erzeugung und CO₂ in Deutschland am {date}"
+  },
+  "variables": {
+    "price": "Day-Ahead-Preis",
+    "generation": "Nettostromerzeugung nach Energieträgern",
+    "co2": "Geschätzte CO₂-Intensität"
   }
 }
