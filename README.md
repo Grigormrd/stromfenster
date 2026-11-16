@@ -4,7 +4,7 @@
 
 **Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 4 (languages and SEO). The site is in German and English, with one page per day, a sitemap, structured data and link previews. The accessibility and performance passes follow in Phase 5. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 5 (quality). End-to-end and accessibility tests run in CI; the Lighthouse measurement on the deployed site is still open. Then Phase 6 packages the project. See the [roadmap](docs/ROADMAP.md).
 
 ## Features
 
@@ -18,7 +18,9 @@
 - **Server-rendered charts**: the charts and the recommendation are in the HTML and work without JavaScript, including the choice of duration ([ADR 6](docs/adr/0006-server-rendered-svg-charts.md))
 - **A table for every chart**, light and dark mode
 
-Planned: WCAG 2.1 AA checked with axe, Lighthouse on the production build.
+- **Accessible**: WCAG 2.1 AA checked with axe-core on every kind of page, light and dark, desktop and phone; charts can be read with the keyboard and have a table each
+
+Planned: Lighthouse on the deployed site.
 
 ## Tech stack
 
@@ -96,6 +98,7 @@ test/
   nuxt/         Tests inside a Nuxt runtime
   worker/       The Worker with D1 in workerd
   site/         The built website: the HTML it sends
+  e2e/          Playwright with axe-core against the production build
   fixtures/     Recorded responses from SMARD and from the deployed API
 docs/
   adr/          Architecture Decision Records
@@ -133,6 +136,7 @@ The local database lives in `worker/.wrangler/`. `/__scheduled` only exists in l
 | `pnpm test`        | Run the unit tests and the tests inside a Nuxt runtime              |
 | `pnpm test:worker` | Run the Worker with D1 in `workerd`                                 |
 | `pnpm test:site`   | Start the built website and check the HTML it sends (needs a build) |
+| `pnpm e2e`         | End-to-end and accessibility tests in Chromium (needs a build)      |
 | `pnpm lint`        | Lint the codebase                                                   |
 | `pnpm typecheck`   | Type-check the website, the Worker, tests and scripts               |
 | `pnpm check`       | Everything CI runs after formatting, including both test suites     |
@@ -163,7 +167,12 @@ Each layer is tested where it runs. The only thing replaced is SMARD itself, by 
 | Pages and components  | Vitest + Nuxt environment | Both languages: the pages and the charts rendered for the recorded evening, the methodology tables against the definitions the calculations use, the state when the data API fails                                                     |
 | Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript, in both languages: recommendations, charts, the duration choice by CSS, `hreflang` and canonical links, the methodology at its address in each language; 503 and `no-store` when the data API is down |
 
-End-to-end and accessibility tests with Playwright and axe-core follow in Phase 5.
+| In the browser | Playwright + axe-core | WCAG 2.1 A and AA on every kind of page, light and dark, desktop and phone, also with the tables open; the duration choice with and without JavaScript; reading a chart with the keyboard; moving between days and languages; the not-found pages |
+
+```bash
+pnpm build
+pnpm e2e   # starts the build against recorded data; needs Chromium: pnpm exec playwright install chromium
+```
 
 ## License
 

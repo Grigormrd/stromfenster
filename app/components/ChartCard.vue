@@ -32,7 +32,9 @@ const NARROW = { width: 380, height: 250 };
 
     <details class="table-view">
       <summary>{{ tableLabel }}</summary>
-      <div class="table-scroll"><slot name="table" /></div>
+      <div class="table-scroll" tabindex="0" role="region" :aria-label="tableLabel">
+        <slot name="table" />
+      </div>
     </details>
   </figure>
 </template>

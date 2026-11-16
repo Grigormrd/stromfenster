@@ -89,6 +89,13 @@ function onPointerMove(event: PointerEvent) {
   hovered.value = index >= 0 && index < props.measured ? index : null;
 }
 
+const hintId = useId();
+const { byKeyboard, onFocus, onKeydown, onBlur, onPointer } = useChartKeyboard({
+  hovered,
+  count: () => props.measured,
+  start: () => props.measured - 1,
+});
+
 const tooltip = computed(() => {
   const index = hovered.value;
   if (index === null) return null;
@@ -110,16 +117,34 @@ const tooltip = computed(() => {
     share: share === null ? null : formatters.value.share(share),
   };
 });
+/** What a screen reader hears when the marker moves with the keyboard. */
+const announcement = computed(() => {
+  const tip = tooltip.value;
+  if (!byKeyboard.value || !tip) return "";
+  const rows = tip.rows.map((row) => `${row.label} ${row.value}`).join(", ");
+  return [`${tip.time}: ${rows}`, tip.share && t("charts.mix.renewable", { share: tip.share })]
+    .filter(Boolean)
+    .join(". ");
+});
 </script>
 
 <template>
   <div class="chart" @pointerleave="hovered = null">
+    <!-- Focusable: the arrow keys move the marker (see useChartKeyboard). -->
     <svg
       ref="svg"
       :viewBox="`0 0 ${width} ${height}`"
       role="img"
+      tabindex="0"
       :aria-label="label"
-      @pointermove="onPointerMove"
+      :aria-describedby="hintId"
+      @pointermove="
+        onPointer();
+        onPointerMove($event);
+      "
+      @focus="onFocus"
+      @blur="onBlur"
+      @keydown="onKeydown"
     >
       <g class="grid">
         <template v-for="tick in ticks" :key="tick">
@@ -177,12 +202,20 @@ const tooltip = computed(() => {
         {{ t("charts.mix.renewable", { share: tooltip.share }) }}
       </span>
     </div>
+    <p :id="hintId" class="visually-hidden">{{ t("charts.keyboard") }}</p>
+    <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
   </div>
 </template>
 
 <style scoped>
 .chart {
   position: relative;
+}
+
+svg:focus-visible {
+  outline: 2px solid var(--price);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 svg {

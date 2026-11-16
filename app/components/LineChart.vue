@@ -129,6 +129,13 @@ function onPointerMove(event: PointerEvent) {
   hovered.value = index >= 0 && index < props.values.length ? index : null;
 }
 
+const hintId = useId();
+const { byKeyboard, onFocus, onKeydown, onBlur, onPointer } = useChartKeyboard({
+  hovered,
+  count: () => props.values.length,
+  start: () => Math.max(props.nowSlot, 0),
+});
+
 const tooltip = computed(() => {
   const index = hovered.value;
   if (index === null) return null;
@@ -144,16 +151,29 @@ const tooltip = computed(() => {
     y: value === null || value === undefined ? null : y.value(value),
   };
 });
+/** What a screen reader hears when the marker moves with the keyboard. */
+const announcement = computed(() =>
+  byKeyboard.value && tooltip.value ? `${tooltip.value.time}: ${tooltip.value.value}` : "",
+);
 </script>
 
 <template>
   <div class="chart" @pointerleave="hovered = null">
+    <!-- Focusable: the arrow keys move the marker (see useChartKeyboard). -->
     <svg
       ref="svg"
       :viewBox="`0 0 ${width} ${height}`"
       role="img"
+      tabindex="0"
       :aria-label="label"
-      @pointermove="onPointerMove"
+      :aria-describedby="hintId"
+      @pointermove="
+        onPointer();
+        onPointerMove($event);
+      "
+      @focus="onFocus"
+      @blur="onBlur"
+      @keydown="onKeydown"
     >
       <!-- Grid and value axis -->
       <g class="grid">
@@ -237,12 +257,20 @@ const tooltip = computed(() => {
       <span class="tooltip-time">{{ tooltip.time }}</span>
       <strong>{{ tooltip.value }}</strong>
     </div>
+    <p :id="hintId" class="visually-hidden">{{ t("charts.keyboard") }}</p>
+    <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
   </div>
 </template>
 
 <style scoped>
 .chart {
   position: relative;
+}
+
+svg:focus-visible {
+  outline: 2px solid var(--price);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 svg {

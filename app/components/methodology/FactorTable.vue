@@ -16,7 +16,7 @@ const rows = (Object.keys(EMISSION_FACTORS) as GenerationSeriesId[])
 <template>
   <!-- Outside the scrolling area, so a wide table on a narrow screen does not cut it off. -->
   <p id="factor-table-caption" class="table-caption">{{ t("factors.caption") }}</p>
-  <div class="table-scroll">
+  <div class="table-scroll" tabindex="0" role="region" aria-labelledby="factor-table-caption">
     <table class="factors" aria-labelledby="factor-table-caption">
       <thead>
         <tr>

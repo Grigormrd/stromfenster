@@ -64,9 +64,9 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 ## Phase 5: Quality
 
-- [ ] Playwright end-to-end tests against the production build
-- [ ] Accessibility: axe-core on every page in light and dark mode (WCAG 2.1 AA), charts usable with the keyboard, a data table as an alternative to each chart
-- [ ] Error and not-found pages
+- [x] Playwright end-to-end tests against the production build, with recorded data and a fixed clock; in CI before every deployment
+- [x] Accessibility: axe-core on every page in light and dark mode, desktop and phone (WCAG 2.1 AA); charts readable with the keyboard; a table for each chart; tables that scroll sideways can be focused
+- [x] Error and not-found pages in both languages
 - [ ] Lighthouse on the production build
 
 **Done when:** axe reports no violations, and the measured Lighthouse scores are in the README.
