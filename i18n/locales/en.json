@@ -144,7 +144,8 @@
     "series": "Series on SMARD",
     "renewable": "Renewable",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "caption": "Groups of generation and their series on SMARD"
   },
   "methodology": {
     "title": "How the figures are calculated · Stromfenster",
@@ -186,5 +187,15 @@
     "price": "Day-ahead price",
     "generation": "Net electricity generation by source",
     "co2": "Estimated CO₂ intensity"
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundText": "There is no such address on Stromfenster. One of these links may help:",
+    "otherTitle": "Something went wrong",
+    "otherText": "The page could not be shown. Please try again in a few minutes.",
+    "code": "Error {code}",
+    "home": "To the start page",
+    "yesterday": "Yesterday",
+    "methodology": "How the figures are calculated"
   }
 }

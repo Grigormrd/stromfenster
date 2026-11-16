@@ -292,3 +292,9 @@ a {
   margin: 0 auto;
   padding: 2rem 1rem 3rem;
 }
+
+/* Tables that scroll sideways on narrow screens can be focused and scrolled with the keyboard. */
+.table-scroll:focus-visible {
+  outline: 2px solid var(--price);
+  outline-offset: 2px;
+}

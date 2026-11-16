@@ -6,8 +6,8 @@ const rows = [...MIX_GROUPS].reverse();
 </script>
 
 <template>
-  <div class="table-scroll">
-    <table>
+  <div class="table-scroll" tabindex="0" role="region" :aria-label="t('groups.caption')">
+    <table :aria-label="t('groups.caption')">
       <thead>
         <tr>
           <th scope="col">{{ t("groups.group") }}</th>

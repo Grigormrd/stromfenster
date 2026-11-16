@@ -144,7 +144,8 @@
     "series": "Reihen bei SMARD",
     "renewable": "Erneuerbar",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "caption": "Gruppen der Erzeugung und ihre Reihen bei SMARD"
   },
   "methodology": {
     "title": "So werden die Zahlen berechnet · Stromfenster",
@@ -186,5 +187,15 @@
     "price": "Day-Ahead-Preis",
     "generation": "Nettostromerzeugung nach Energieträgern",
     "co2": "Geschätzte CO₂-Intensität"
+  },
+  "errors": {
+    "notFoundTitle": "Seite nicht gefunden",
+    "notFoundText": "Diese Adresse gibt es bei Stromfenster nicht. Vielleicht hilft einer dieser Links weiter:",
+    "otherTitle": "Etwas ist schiefgelaufen",
+    "otherText": "Die Seite konnte nicht angezeigt werden. Bitte in ein paar Minuten noch einmal versuchen.",
+    "code": "Fehler {code}",
+    "home": "Zur Startseite",
+    "yesterday": "Der gestrige Tag",
+    "methodology": "So werden die Zahlen berechnet"
   }
 }

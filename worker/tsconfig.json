@@ -22,6 +22,8 @@
     "../test/unit/**/*",
     "../test/worker/**/*",
     "../test/site/**/*",
+    "../test/e2e/**/*",
+    "../playwright.config.ts",
     "../test/fixtures/**/*.ts"
   ]
 }
