@@ -4,7 +4,7 @@
 
 **Live:** [stromfenster.vercel.app](https://stromfenster.vercel.app) · Data API: [stromfenster.plan-werk.workers.dev](https://stromfenster.plan-werk.workers.dev) · What the import is doing: [/api/status](https://stromfenster.plan-werk.workers.dev/api/status) · A day of data: [/api/days/2026-11-14](https://stromfenster.plan-werk.workers.dev/api/days/2026-11-14) (complete days start on 13 November 2026)
 
-> **Status:** Phase 5 (quality). End-to-end and accessibility tests run in CI; the Lighthouse measurement on the deployed site is still open. Then Phase 6 packages the project. See the [roadmap](docs/ROADMAP.md).
+> **Status:** Phase 6 (portfolio packaging). Phases 0 to 5 are done: pipeline, dashboard, CO₂ estimate, two languages, day pages, end-to-end and accessibility tests, and [Lighthouse](#lighthouse) on the deployed site. See the [roadmap](docs/ROADMAP.md).
 
 ## Features
 
@@ -17,10 +17,8 @@
 - **Found and shared well**: a sitemap in both languages, a schema.org `Dataset` on every data page, and a link preview image
 - **Server-rendered charts**: the charts and the recommendation are in the HTML and work without JavaScript, including the choice of duration ([ADR 6](docs/adr/0006-server-rendered-svg-charts.md))
 - **A table for every chart**, light and dark mode
-
 - **Accessible**: WCAG 2.1 AA checked with axe-core on every kind of page, light and dark, desktop and phone; charts can be read with the keyboard and have a table each
-
-Planned: Lighthouse on the deployed site.
+- **Fast**: Lighthouse 98 to 100 for performance on phone and desktop, 100 for accessibility, best practices and SEO ([measurements](#lighthouse))
 
 ## Tech stack
 
@@ -159,20 +157,35 @@ Migrations run before the new Worker goes live, so it never meets an old schema.
 
 Each layer is tested where it runs. The only thing replaced is SMARD itself, by responses recorded from it ([`test/fixtures/smard`](test/fixtures/smard)).
 
-| Layer                 | Tool                      | What it covers                                                                                                                                                                                                                         |
-| --------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses; the summary of import runs                                                                                       |
-| Import, database, API | Vitest + `workerd` + D1   | The Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes                                                                                        |
-| Dashboard logic       | Vitest                    | Best window against a brute-force check, timeline, generation mix, CO₂ estimate, chart geometry, formatting; on days recorded from the deployed API                                                                                    |
-| Pages and components  | Vitest + Nuxt environment | Both languages: the pages and the charts rendered for the recorded evening, the methodology tables against the definitions the calculations use, the state when the data API fails                                                     |
-| Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript, in both languages: recommendations, charts, the duration choice by CSS, `hreflang` and canonical links, the methodology at its address in each language; 503 and `no-store` when the data API is down |
-
-| In the browser | Playwright + axe-core | WCAG 2.1 A and AA on every kind of page, light and dark, desktop and phone, also with the tables open; the duration choice with and without JavaScript; reading a chart with the keyboard; moving between days and languages; the not-found pages |
+| Layer                 | Tool                      | What it covers                                                                                                                                                                                                                                    |
+| --------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calendar and parsing  | Vitest                    | Berlin days and weeks including clock changes, checked against every week SMARD lists; parsing of recorded responses; the summary of import runs                                                                                                  |
+| Import, database, API | Vitest + `workerd` + D1   | The Worker: a Cron Trigger imports a recording, a second run writes nothing, a later recording only its changes; failing series; the API routes                                                                                                   |
+| Dashboard logic       | Vitest                    | Best window against a brute-force check, timeline, generation mix, CO₂ estimate, chart geometry, formatting; on days recorded from the deployed API                                                                                               |
+| Pages and components  | Vitest + Nuxt environment | Both languages: the pages and the charts rendered for the recorded evening, the methodology tables against the definitions the calculations use, the state when the data API fails                                                                |
+| Server-rendered HTML  | Vitest + the built server | What arrives without JavaScript, in both languages: recommendations, charts, the duration choice by CSS, `hreflang` and canonical links, the methodology at its address in each language; 503 and `no-store` when the data API is down            |
+| In the browser        | Playwright + axe-core     | WCAG 2.1 A and AA on every kind of page, light and dark, desktop and phone, also with the tables open; the duration choice with and without JavaScript; reading a chart with the keyboard; moving between days and languages; the not-found pages |
 
 ```bash
 pnpm build
 pnpm e2e   # starts the build against recorded data; needs Chromium: pnpm exec playwright install chromium
 ```
+
+## Lighthouse
+
+Measured on 16 November 2026 on the deployed site, with Lighthouse in Chrome DevTools in its mobile and desktop modes. Each cell lists performance · accessibility · best practices · SEO.
+
+| Page                                                       | Phone                  | Desktop               |
+| ---------------------------------------------------------- | ---------------------- | --------------------- |
+| [Start page](https://stromfenster.vercel.app/)             | 98 · 100 · 100 · 100   | 100 · 100 · 100 · 100 |
+| [Methodology](https://stromfenster.vercel.app/methodik)    | 99 · 100 · 100 · 100 ¹ | 100 · 100 · 100 · 100 |
+| [Day page](https://stromfenster.vercel.app/tag/2026-11-15) | 98 · 100 · 100 · 100 ¹ | 100 · 100 · 100 · 100 |
+
+Largest Contentful Paint was 1.7 s for the start page on the phone, and 0.3 to 0.4 s on desktop.
+
+The start page was measured in a private window. A first run in a profile with browser extensions scored 59 for performance on the phone and 96 for best practices: an extension made Vue report a hydration mismatch in the console. The same files, served from `localhost` where extensions do not run, hydrate without it.
+
+¹ Lighthouse reported that browser extensions affected this run.
 
 ## License
 

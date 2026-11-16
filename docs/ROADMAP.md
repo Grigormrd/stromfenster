@@ -62,12 +62,12 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 **Done when:** both languages have correct `hreflang` pairs, and a past day is served from the cache.
 
-## Phase 5: Quality
+## Phase 5: Quality ✅
 
 - [x] Playwright end-to-end tests against the production build, with recorded data and a fixed clock; in CI before every deployment
 - [x] Accessibility: axe-core on every page in light and dark mode, desktop and phone (WCAG 2.1 AA); charts readable with the keyboard; a table for each chart; tables that scroll sideways can be focused
 - [x] Error and not-found pages in both languages
-- [ ] Lighthouse on the production build
+- [x] Lighthouse on the production build: start page, methodology and a day page, phone and desktop ([README](../README.md#lighthouse))
 
 **Done when:** axe reports no violations, and the measured Lighthouse scores are in the README.
 
