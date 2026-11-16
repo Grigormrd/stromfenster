@@ -71,10 +71,11 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 **Done when:** axe reports no violations, and the measured Lighthouse scores are in the README.
 
-## Phase 6: Portfolio packaging
+## Phase 6: Portfolio packaging ✅
 
-- [ ] README with live link, animated preview and final architecture diagram
-- [ ] "What was hard" write-up
+- [x] README with live link, animated preview and final architecture diagram
+- [x] Preview recorded from the production build with recorded data (`pnpm record-demo`), so it can be made again after a change
+- [x] "What was hard" write-up
 
 ## Later
 

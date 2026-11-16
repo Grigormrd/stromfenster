@@ -26,7 +26,8 @@
     "deploy:worker": "wrangler deploy --config worker/wrangler.jsonc",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "record-demo": "playwright test --config playwright.record.config.ts"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.6.0",
