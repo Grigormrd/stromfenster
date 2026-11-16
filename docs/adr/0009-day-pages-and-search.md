@@ -35,3 +35,7 @@ Each page shows the day's average, lowest and highest price with their quarter h
 - **Tomorrow's day page** exists from the start, with forecasts only until the prices are published; its price chart appears when they are.
 - **The preview image is static.** A preview with the current price would need an image rendered per request, which is more than the free plans should carry for a picture.
 - **Tests** check day pages in both languages, the 404 cases, the sitemap, `robots.txt`, the redirect, the preview tags and the structured data in the HTML of the built server.
+
+## Addendum: checked on the deployment (2026-11-16)
+
+`/tag/2026-11-15` and `/en/day/2026-11-15` on https://stromfenster.vercel.app: the first request was a `MISS` and took 1.2 and 0.9 seconds, the two following ones were a `HIT` and took 0.19 and 0.07 seconds. `/tag/2026-11-10` and `/tag/2026-11-25` answered 404, `/methodology` 301 to `/en/methodology`. The sitemap listed ten addresses: the start page, the methodology and the three complete days up to yesterday, each in both languages.

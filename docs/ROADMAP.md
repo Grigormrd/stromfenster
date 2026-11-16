@@ -51,14 +51,14 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 **Done when:** every number on the page can be traced to its source.
 
-## Phase 4: Languages and SEO
+## Phase 4: Languages and SEO ✅
 
 - [x] German and English with `@nuxtjs/i18n`, numbers and times formatted for `Europe/Berlin` on server and client ([ADR 8](adr/0008-german-and-english.md))
 - [x] One page per day in both languages, from the first day with data to tomorrow; past days are cached for an hour, because SMARD still corrects them ([ADR 9](adr/0009-day-pages-and-search.md))
 - [x] `hreflang` and canonical links on every page
 - [x] Sitemap in both languages, schema.org `Dataset` on the data pages, link preview image
 - [x] Redirect from the old English methodology address
-- [ ] Check on Vercel that a past day is served from the cache
+- [x] Check on Vercel that a past day is served from the cache: the first request renders it, the next ones are a `HIT`
 
 **Done when:** both languages have correct `hreflang` pairs, and a past day is served from the cache.
 
