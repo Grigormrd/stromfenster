@@ -53,3 +53,9 @@ That is no longer "over the limit on every run by a factor of four", but it is n
 The 48 hours of the Phase 1 criterion are the practical test. A terminated run would show as a gap in `/api/status` and as `Exceeded CPU Time Limits` in the dashboard. If that happens, the next steps are known: skip the weekly file a series cannot have values in (next week's for measured series, last week's for forecasts), and narrow the window per kind of series.
 
 An attempt to profile the Worker locally through the inspector of `wrangler dev` did not give usable numbers: the profile had 5 to 11 samples per run.
+
+## Addendum: 48 hours (2026-11-16)
+
+`/api/status` at 20:41 UTC on 16 November 2026, covering the 48 hours before the last run: 2,881 runs, all `ok`, none `partial` or `failed`, longest gap between two runs one minute. A run recorded itself at its end, so a run terminated for CPU time would have left no entry and a gap of two minutes or more. There is none. The slowest run took 9.7 seconds of wall time, which is waiting for SMARD and D1, not CPU.
+
+Over those 48 hours the import read 631,302 rows and wrote 11,212, well inside the daily D1 allowance of 5 million and 100,000.

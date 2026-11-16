@@ -12,7 +12,7 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 
 **Done when:** `pnpm check` is green locally and in CI.
 
-## Phase 1: Data pipeline
+## Phase 1: Data pipeline ✅
 
 - [x] SMARD client for day-ahead prices, generation per source, load and forecasts (15-minute resolution) ([ADR 2](adr/0002-smard-as-data-source.md))
 - [x] Normalisation into one time series model, tested against recorded SMARD responses, including the days the clocks change (92 and 100 quarter hours)
@@ -26,7 +26,7 @@ Goal for v1: a page that answers "when should I run the washing machine?" in fiv
 - [x] Measure the CPU time of the pipeline Worker: API requests fit, an import of all series does not ([ADR 5](adr/0005-one-series-per-run.md))
 - [x] Import one series per run, every minute
 - [x] Measure the CPU time of an import run again: median 8.2 ms, between 5 and 14 ms; about half of the runs are below 10 ms ([ADR 5](adr/0005-one-series-per-run.md))
-- [ ] 48 hours without a terminated run
+- [x] 48 hours without a terminated run: 2,881 runs from 14 to 16 November 2026, all `ok`, longest gap one minute
 
 **Done when:** the import has run for 48 hours without a gap (one run per minute) and without a run terminated for CPU time.
 
