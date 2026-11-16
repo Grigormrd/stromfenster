@@ -3,9 +3,19 @@ const { t } = useI18n();
 const format = useFormatters();
 const localePath = useLocalePath();
 
-useSeoMeta({
+const { localeProperties } = useI18n();
+usePageMeta({
   title: () => t("site.title"),
   description: () => t("site.description"),
+  structuredData: () =>
+    datasetJsonLd({
+      name: t("share.datasetName"),
+      description: t("site.description"),
+      url: `${SITE_URL}${localePath("index") === "/" ? "" : localePath("index")}`,
+      language: localeProperties.value.language ?? "de-DE",
+      temporalCoverage: `${FIRST_DAY}/..`,
+      variables: [t("variables.price"), t("variables.generation"), t("variables.co2")],
+    }),
 });
 
 const { dashboard, now, data, error, ready } = useDashboard();
@@ -93,6 +103,7 @@ const generationFigures = computed(() => {
 
 const legend = [...MIX_GROUPS].reverse();
 const updated = computed(() => (data.value ? format.value.time(data.value.fetchedAt) : null));
+const yesterday = computed(() => addDays(berlinDateKey(now.value), -1));
 const dayLabel = computed(() =>
   t("footer.day", {
     weekday: format.value.weekday(now.value),
@@ -299,6 +310,12 @@ const cell = (value: number | null, show: (value: number) => string) =>
         {{ t("footer.zone") }}
       </p>
       <p>
+        {{ t("footer.pastDays") }}:
+        <NuxtLink :to="localePath({ name: 'day-date', params: { date: yesterday } })">{{
+          t("footer.yesterday")
+        }}</NuxtLink>
+      </p>
+      <p>
         {{ t("footer.data") }}
         <a href="https://www.smard.de">Bundesnetzagentur | SMARD.de</a>,
         <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
@@ -310,14 +327,6 @@ const cell = (value: number | null, show: (value: number) => string) =>
 </template>
 
 <style scoped>
-.dashboard {
-  display: grid;
-  gap: 1rem;
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 2rem 1rem 3rem;
-}
-
 .intro {
   padding: 0 0.25rem 0.5rem;
 }
@@ -351,82 +360,6 @@ h1 {
 .price-note {
   padding: 0 0.25rem;
   font-size: 0.875rem;
-}
-
-.figures {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: 0.75rem 1.5rem;
-  margin: 0 0 0.5rem;
-}
-
-.figures dt {
-  color: var(--ink-secondary);
-  font-size: 0.875rem;
-}
-
-.figures dd {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.figures .figure-note {
-  color: var(--ink-secondary);
-  font-size: 0.8125rem;
-  font-weight: 400;
-}
-
-.figures-source {
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  margin: 0 0 0.5rem;
-  padding: 0;
-  list-style: none;
-  font-size: 0.875rem;
-}
-
-.legend li {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.swatch {
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 2px;
-}
-
-.swatch--other {
-  background: var(--mix-other);
-}
-
-.swatch--coal {
-  background: var(--mix-coal);
-}
-
-.swatch--gas {
-  background: var(--mix-gas);
-}
-
-.swatch--other_renewables {
-  background: var(--mix-other-renewables);
-}
-
-.swatch--wind {
-  background: var(--mix-wind);
-}
-
-.swatch--solar {
-  background: var(--mix-solar);
 }
 
 footer {

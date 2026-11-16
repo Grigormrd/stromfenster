@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { SITE_URL } from "./shared/utils/site";
 
 // Time series are arrays indexed by position; an index that may be out of range
 // should be `undefined` in the types as well.
@@ -34,7 +35,7 @@ export default defineNuxtConfig({
     // everyone, and a link should open in the language it was shared in.
     detectBrowserLanguage: false,
     // Used for canonical and hreflang links (NUXT_PUBLIC_I18N_BASE_URL).
-    baseUrl: "https://stromfenster.vercel.app",
+    baseUrl: SITE_URL,
     locales: [
       { code: "de", language: "de-DE", name: "Deutsch", file: "de.json" },
       { code: "en", language: "en-GB", name: "English", file: "en.json" },
@@ -42,6 +43,7 @@ export default defineNuxtConfig({
     customRoutes: "config",
     pages: {
       methodology: { de: "/methodik", en: "/methodology" },
+      "day/[date]": { de: "/tag/[date]", en: "/day/[date]" },
     },
   },
 
@@ -53,6 +55,13 @@ export default defineNuxtConfig({
     // Text and tables that only change with a deployment.
     "/methodik": { prerender: true },
     "/en/methodology": { prerender: true },
+    // One page per day. SMARD corrects values for up to two days, so a past
+    // day is kept for an hour, not for ever (see docs/adr/0009).
+    "/tag/**": { isr: 3600 },
+    "/en/day/**": { isr: 3600 },
+    "/sitemap.xml": { isr: 3600 },
+    // The English methodology was here for a day before German moved to the root.
+    "/methodology": { redirect: { to: "/en/methodology", statusCode: 301 } },
   },
 
   typescript: {

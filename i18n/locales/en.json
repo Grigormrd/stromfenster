@@ -86,7 +86,9 @@
     "day": "{weekday}, {date}",
     "asOf": "data as of {time}",
     "zone": "all times in German time",
-    "data": "Data:"
+    "data": "Data:",
+    "pastDays": "Earlier days",
+    "yesterday": "yesterday"
   },
   "mix": {
     "other": "Other",
@@ -147,5 +149,42 @@
   "methodology": {
     "title": "How the figures are calculated · Stromfenster",
     "description": "Where the data of Stromfenster comes from, what is measured, what is estimated, and what is left out."
+  },
+  "day": {
+    "title": "{date}: electricity price and generation · Stromfenster",
+    "description": "Day-ahead prices, electricity generation by source and estimated CO₂ emissions in Germany on {date}.",
+    "heading": "Electricity on {date}",
+    "lead": "Day-ahead prices and measured generation of this day.",
+    "averagePrice": "Average price",
+    "lowest": "Lowest price",
+    "highest": "Highest price",
+    "at": "{from}–{to}",
+    "co2": "CO₂ per kWh, day mean",
+    "renewables": "Renewables, share of the day",
+    "estimate": "estimate",
+    "shareOfGeneration": "share of generation",
+    "partial": "{measured} of {total} quarter hours measured",
+    "noPrice": "There are no prices for this day.",
+    "noGeneration": "There are no measurements of generation for this day yet.",
+    "otherDays": "Other days",
+    "previous": "← {date}",
+    "next": "{date} →",
+    "priceSubtitle": "Day-ahead wholesale price in ct/kWh, per quarter hour. Without taxes, levies and grid fees.",
+    "priceAria": "Line chart of the day-ahead price on this day. The values are in the table below.",
+    "priceCaption": "Hourly mean in ct/kWh",
+    "price": "Price",
+    "mixTitle": "Generation",
+    "mixSubtitle": "Measured net generation in GW, per quarter hour.",
+    "mixAria": "Stacked area chart of this day's electricity generation by source. The values are in the table below."
+  },
+  "share": {
+    "imageAlt": "Stromfenster: the electricity price over a day, with the cheapest window marked.",
+    "datasetName": "Electricity prices, generation and CO₂ in Germany",
+    "datasetDay": "Electricity prices, generation and CO₂ in Germany on {date}"
+  },
+  "variables": {
+    "price": "Day-ahead price",
+    "generation": "Net electricity generation by source",
+    "co2": "Estimated CO₂ intensity"
   }
 }

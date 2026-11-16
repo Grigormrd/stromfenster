@@ -2,7 +2,7 @@
 const { t, locale } = useI18n();
 const localePath = useLocalePath();
 
-useSeoMeta({
+usePageMeta({
   title: () => t("methodology.title"),
   description: () => t("methodology.description"),
 });
