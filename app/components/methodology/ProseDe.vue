@@ -6,11 +6,6 @@ const seriesCount = SERIES_IDS.length;
 </script>
 
 <template>
-  <h1>So werden die Zahlen berechnet</h1>
-  <p class="lead secondary">
-    Was gemessen ist, was geschätzt ist, was fehlt und woher jede Zahl stammt.
-  </p>
-
   <section id="data" aria-labelledby="data-heading">
     <h2 id="data-heading">Die Daten</h2>
     <p>

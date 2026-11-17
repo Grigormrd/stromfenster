@@ -6,7 +6,8 @@
     "intro": "Day-ahead prices and the expected share of wind and solar, for today and tomorrow."
   },
   "nav": {
-    "home": "← Stromfenster",
+    "label": "Main navigation",
+    "methodologyShort": "Methodology",
     "methodology": "How these figures are calculated",
     "switchLanguage": "Deutsch"
   },
@@ -169,15 +170,17 @@
     "noPrice": "There are no prices for this day.",
     "noGeneration": "There are no measurements of generation for this day yet.",
     "otherDays": "Other days",
-    "previous": "← {date}",
-    "next": "{date} →",
+    "previous": "{date}",
+    "next": "{date}",
     "priceSubtitle": "Day-ahead wholesale price in ct/kWh, per quarter hour. Without taxes, levies and grid fees.",
     "priceAria": "Line chart of the day-ahead price on this day. The values are in the table below.",
     "priceCaption": "Hourly mean in ct/kWh",
     "price": "Price",
     "mixTitle": "Generation",
     "mixSubtitle": "Measured net generation in GW, per quarter hour.",
-    "mixAria": "Stacked area chart of this day's electricity generation by source. The values are in the table below."
+    "mixAria": "Stacked area chart of this day's electricity generation by source. The values are in the table below.",
+    "previousLabel": "Previous day",
+    "nextLabel": "Next day"
   },
   "share": {
     "imageAlt": "Stromfenster: the electricity price over a day, with the cheapest window marked.",

@@ -19,6 +19,7 @@
 - **Found and shared well**: a sitemap in both languages, a schema.org `Dataset` on every data page, and a link preview image
 - **Server-rendered charts**: the charts and the recommendation are in the HTML and work without JavaScript, including the choice of duration ([ADR 6](docs/adr/0006-server-rendered-svg-charts.md))
 - **A table for every chart**, light and dark mode
+- **Drawn like a guide map**: a flat green area of land carries each page's answer above pale water, with capsules for labels and choices, a self-hosted typeface and no shadows or gradients. The chart colours were checked for colour-blind separation and contrast in both modes ([DESIGN.md](DESIGN.md))
 - **Accessible**: WCAG 2.1 AA checked with axe-core on every kind of page, light and dark, desktop and phone; charts can be read with the keyboard and have a table each
 - **Fast**: Lighthouse 98 to 100 for performance on phone and desktop, 100 for accessibility, best practices and SEO ([measurements](#lighthouse))
 
@@ -27,7 +28,7 @@
 | Area     | Choice                                                                                   |
 | -------- | ---------------------------------------------------------------------------------------- |
 | Website  | Nuxt 4, Vue 3 (Composition API), TypeScript (strict), `@nuxtjs/i18n`, on Vercel with ISR |
-| Charts   | SVG rendered by Vue on the server, no chart library, plain CSS                           |
+| Charts   | SVG rendered by Vue on the server, no chart library, plain CSS with design tokens        |
 | Pipeline | A Cloudflare Worker without a framework: Cron Trigger, D1 (SQLite), JSON API             |
 | Data     | SMARD, the Bundesnetzagentur's market data platform                                      |
 | Testing  | Vitest; the Worker with D1 in `workerd`                                                  |
@@ -187,7 +188,7 @@ pnpm e2e   # starts the build against recorded data; needs Chromium: pnpm exec p
 
 ## Lighthouse
 
-Measured on 16 November 2026 on the deployed site, with Lighthouse in Chrome DevTools in its mobile and desktop modes. Each cell lists performance · accessibility · best practices · SEO.
+Measured on 16 November 2026 on the deployed site, with Lighthouse in Chrome DevTools in its mobile and desktop modes. Each cell lists performance · accessibility · best practices · SEO. These measurements were taken before the visual redesign of 17 November 2026 (self-hosted typeface, new colours); they have not been repeated since.
 
 | Page                                                       | Phone                  | Desktop               |
 | ---------------------------------------------------------- | ---------------------- | --------------------- |

@@ -117,11 +117,14 @@ const cell = (value: number | null, show: (value: number) => string) =>
 
 <template>
   <main class="dashboard">
-    <header class="intro">
-      <h1>Stromfenster</h1>
-      <p class="lead">{{ t("site.question") }}</p>
-      <p class="secondary">{{ t("site.intro") }}</p>
-    </header>
+    <LandHeader home>
+      <header class="intro">
+        <p class="lead">{{ t("site.question") }}</p>
+        <p class="intro-text">{{ t("site.intro") }}</p>
+      </header>
+      <p v-if="dashboard?.stale" class="notice" role="status">{{ t("states.stale") }}</p>
+      <BestWindows v-if="!error && dashboard" :dashboard="dashboard" />
+    </LandHeader>
 
     <section v-if="error || !dashboard" class="card unavailable" role="status">
       <h2>{{ t("states.unavailableTitle") }}</h2>
@@ -129,10 +132,6 @@ const cell = (value: number | null, show: (value: number) => string) =>
     </section>
 
     <template v-else>
-      <p v-if="dashboard.stale" class="card stale" role="status">{{ t("states.stale") }}</p>
-
-      <BestWindows :dashboard="dashboard" />
-
       <p class="price-note secondary">
         {{ t("priceNote.text") }}
         <NuxtLink :to="localePath({ name: 'methodology', hash: '#prices' })">{{
@@ -156,6 +155,8 @@ const cell = (value: number | null, show: (value: number) => string) =>
             "
             :window-label="t('charts.price.band')"
             color="var(--price)"
+            band-color="var(--band-price)"
+            wash-color="var(--price-wash)"
             :format="format.price"
             :format-tick="format.whole"
             :width="width"
@@ -204,6 +205,8 @@ const cell = (value: number | null, show: (value: number) => string) =>
             "
             :window-label="t('charts.share.band')"
             color="var(--clean)"
+            band-color="var(--band-clean)"
+            wash-color="var(--clean-wash)"
             :format="format.share"
             :format-tick="format.share"
             :width="width"
@@ -303,7 +306,7 @@ const cell = (value: number | null, show: (value: number) => string) =>
       </ChartCard>
     </template>
 
-    <footer class="secondary">
+    <footer class="site-footer secondary">
       <p>
         {{ dayLabel
         }}<template v-if="updated"> · {{ t("footer.asOf", { time: updated }) }}</template> ·
@@ -319,8 +322,7 @@ const cell = (value: number | null, show: (value: number) => string) =>
         {{ t("footer.data") }}
         <a href="https://www.smard.de">Bundesnetzagentur | SMARD.de</a>,
         <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
-        · <NuxtLink :to="localePath('methodology')">{{ t("nav.methodology") }}</NuxtLink> ·
-        <LanguageSwitch />
+        · <NuxtLink :to="localePath('methodology')">{{ t("nav.methodology") }}</NuxtLink>
       </p>
     </footer>
   </main>
@@ -328,44 +330,46 @@ const cell = (value: number | null, show: (value: number) => string) =>
 
 <style scoped>
 .intro {
-  padding: 0 0.25rem 0.5rem;
-}
-
-h1 {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  max-width: 44rem;
+  margin-bottom: clamp(1.75rem, 4vw, 2.25rem);
 }
 
 .lead {
-  margin-top: 0.25rem;
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
-  font-weight: 650;
-  line-height: 1.15;
+  font-size: clamp(2.5rem, 6vw, 3.75rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
   text-wrap: balance;
 }
 
-.intro .secondary {
-  margin-top: 0.5rem;
+.intro-text {
+  margin-top: 1rem;
+  max-width: 34rem;
+  color: var(--on-land-secondary);
+  font-size: 1.1875rem;
+}
+
+.notice {
+  width: fit-content;
+  margin-bottom: 1.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 18px;
+  background: var(--coral);
+  color: var(--capsule-ink);
+  font-weight: 600;
 }
 
 .unavailable h2 {
-  font-size: 1.125rem;
+  font-size: 1.375rem;
 }
 
-.stale {
-  font-size: 0.9375rem;
+.unavailable p {
+  margin-top: 0.5rem;
 }
 
+/* Flush with the panels, but kept to a readable line length. */
 .price-note {
-  padding: 0 0.25rem;
-  font-size: 0.875rem;
-}
-
-footer {
-  display: grid;
-  gap: 0.25rem;
-  padding: 0.5rem 0.25rem 0;
-  font-size: 0.875rem;
+  padding-right: max(0rem, min(var(--page), 100% - 2 * var(--gutter)) - 46rem);
+  font-size: 0.9375rem;
 }
 </style>

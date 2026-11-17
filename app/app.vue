@@ -5,7 +5,17 @@ const head = useLocaleHead();
 
 useHead(() => ({
   htmlAttrs: head.value.htmlAttrs,
-  link: head.value.link,
+  link: [
+    // The one font file every page needs; fetched before the stylesheet asks for it.
+    {
+      rel: "preload",
+      href: "/fonts/hanken-grotesk-latin.woff2",
+      as: "font",
+      type: "font/woff2",
+      crossorigin: "anonymous",
+    },
+    ...head.value.link,
+  ],
   meta: head.value.meta,
 }));
 </script>

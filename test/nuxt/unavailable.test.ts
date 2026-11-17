@@ -15,7 +15,7 @@ describe("start page when the data API fails", () => {
     const page = await mountSuspended(IndexPage, { route: "/" });
 
     expect(page.find(".unavailable").text()).toContain("Die Daten sind gerade nicht verfügbar");
-    expect(page.find("svg").exists()).toBe(false);
+    expect(page.find('svg[role="img"]').exists()).toBe(false);
     expect(page.find("section.best").exists()).toBe(false);
   });
 

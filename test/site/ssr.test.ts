@@ -364,7 +364,7 @@ describe("the start page when the data API cannot be reached", () => {
 
   it("says that the data is unavailable", () => {
     expect(html).toContain("Die Daten sind gerade nicht verfügbar");
-    expect(html).not.toContain("<svg");
+    expect(html).not.toMatch(/<svg[^>]*role="img"/);
   });
 
   it("is marked as an error that must not be cached", () => {

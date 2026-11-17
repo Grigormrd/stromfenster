@@ -98,8 +98,8 @@ describe("start page in German, at the root", () => {
     expect(links).toContain("/methodik");
     expect(links).toContain("/methodik#co2");
     expect(links).toContain("/methodik#prices");
-    expect(page.find('footer a[hreflang="en-GB"]').attributes("href")).toBe("/en");
-    expect(page.find('footer a[hreflang="en-GB"]').text()).toBe("English");
+    expect(page.find('nav a[hreflang="en-GB"]').attributes("href")).toBe("/en");
+    expect(page.find('nav a[hreflang="en-GB"]').text()).toBe("English");
   });
 
   it("names the source and its licence", async () => {
@@ -147,7 +147,7 @@ describe("start page in English, under /en", () => {
 
     expect(links).toContain("/en/methodology");
     expect(links).toContain("/en/methodology#co2");
-    expect(page.find('footer a[hreflang="de-DE"]').attributes("href")).toBe("/");
-    expect(page.find('footer a[hreflang="de-DE"]').text()).toBe("Deutsch");
+    expect(page.find('nav a[hreflang="de-DE"]').attributes("href")).toBe("/");
+    expect(page.find('nav a[hreflang="de-DE"]').text()).toBe("Deutsch");
   });
 });

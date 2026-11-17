@@ -41,21 +41,23 @@ const NARROW = { width: 380, height: 250 };
 
 <style scoped>
 .figure {
-  margin: 0;
+  margin-block: 0;
   container-type: inline-size;
 }
 
 figcaption {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
 h2 {
-  font-size: 1.125rem;
-  line-height: 1.3;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 figcaption p {
-  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
 }
 
 .narrow {
@@ -73,36 +75,70 @@ figcaption p {
 }
 
 .table-view {
-  margin-top: 0.75rem;
+  margin-top: 1.25rem;
   font-size: 0.875rem;
 }
 
+/* The table toggle: an outlined capsule whose chevron turns when it opens. */
 summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   width: fit-content;
-  padding: 0.25rem 0;
-  color: var(--ink-secondary);
+  padding: 0.35rem 1rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-weight: 700;
+  list-style: none;
   cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::after {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -0.12rem;
+  transition: rotate 0.4s var(--ease-swell);
+}
+
+/* Only where there is a real pointer: on touch screens a tap would leave it filled. */
+@media (hover: hover) {
+  summary:hover {
+    background: var(--ink);
+    color: var(--surface);
+  }
+}
+
+details[open] summary::after {
+  rotate: 225deg;
+  translate: 0 0.1rem;
 }
 
 .table-scroll {
   overflow-x: auto;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .table-view :deep(table) {
   border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
 }
 
 .table-view :deep(caption) {
-  text-align: left;
+  padding-bottom: 0.4rem;
   color: var(--ink-secondary);
-  padding-bottom: 0.25rem;
+  text-align: left;
 }
 
 .table-view :deep(th),
 .table-view :deep(td) {
-  padding: 0.2rem 1rem 0.2rem 0;
+  padding: 0.3rem 1.25rem 0.3rem 0;
   border-bottom: 1px solid var(--grid);
   text-align: right;
   white-space: nowrap;
@@ -115,6 +151,9 @@ summary {
 
 .table-view :deep(thead th) {
   color: var(--ink-secondary);
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 </style>

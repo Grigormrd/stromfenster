@@ -66,6 +66,6 @@ describe("day page", () => {
 
     expect(page.find("h1").text()).toBe("Electricity on Friday, 13 November 2026");
     expect(page.find('nav a[rel="next"]').attributes("href")).toBe("/en/day/2026-11-14");
-    expect(page.find('footer a[hreflang="de-DE"]').attributes("href")).toBe("/tag/2026-11-13");
+    expect(page.find('nav a[hreflang="de-DE"]').attributes("href")).toBe("/tag/2026-11-13");
   });
 });

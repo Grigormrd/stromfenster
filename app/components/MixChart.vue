@@ -213,9 +213,9 @@ const announcement = computed(() => {
 }
 
 svg:focus-visible {
-  outline: 2px solid var(--price);
+  outline: 3px solid var(--focus);
   outline-offset: 4px;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 svg {
@@ -228,7 +228,7 @@ svg {
 
 text {
   fill: var(--ink-secondary);
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -290,7 +290,7 @@ text {
 
 .now text {
   fill: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
   paint-order: stroke;
   stroke: var(--surface);
   stroke-width: 4px;
@@ -308,10 +308,9 @@ text {
   display: grid;
   gap: 0.1rem;
   padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
   background: var(--surface);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
   font-size: 0.8125rem;
   white-space: nowrap;
   pointer-events: none;
@@ -333,8 +332,8 @@ text {
 }
 
 .swatch {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 2px;
+  width: 0.875rem;
+  height: 0.5rem;
+  border-radius: 999px;
 }
 </style>

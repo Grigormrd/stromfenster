@@ -7,11 +7,6 @@ const seriesCount = SERIES_IDS.length;
 </script>
 
 <template>
-  <h1>How the figures are calculated</h1>
-  <p class="lead secondary">
-    What is measured, what is estimated, what is left out, and where each number comes from.
-  </p>
-
   <section id="data" aria-labelledby="data-heading">
     <h2 id="data-heading">The data</h2>
     <p>
