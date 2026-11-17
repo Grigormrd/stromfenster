@@ -6,7 +6,8 @@
     "intro": "Day-Ahead-Preise und der erwartete Anteil von Wind und Sonne, für heute und morgen."
   },
   "nav": {
-    "home": "← Stromfenster",
+    "label": "Hauptnavigation",
+    "methodologyShort": "Methodik",
     "methodology": "So werden die Zahlen berechnet",
     "switchLanguage": "English"
   },
@@ -169,15 +170,17 @@
     "noPrice": "Für diesen Tag liegen keine Preise vor.",
     "noGeneration": "Für diesen Tag liegen noch keine Messwerte zur Erzeugung vor.",
     "otherDays": "Andere Tage",
-    "previous": "← {date}",
-    "next": "{date} →",
+    "previous": "{date}",
+    "next": "{date}",
     "priceSubtitle": "Day-Ahead-Großhandelspreis in ct/kWh, je Viertelstunde. Ohne Steuern, Abgaben und Netzentgelte.",
     "priceAria": "Liniendiagramm des Day-Ahead-Preises an diesem Tag. Die Werte stehen in der Tabelle darunter.",
     "priceCaption": "Stundenmittel in ct/kWh",
     "price": "Preis",
     "mixTitle": "Erzeugung",
     "mixSubtitle": "Gemessene Nettostromerzeugung in GW, je Viertelstunde.",
-    "mixAria": "Gestapeltes Flächendiagramm der Stromerzeugung dieses Tages nach Energieträgern. Die Werte stehen in der Tabelle darunter."
+    "mixAria": "Gestapeltes Flächendiagramm der Stromerzeugung dieses Tages nach Energieträgern. Die Werte stehen in der Tabelle darunter.",
+    "previousLabel": "Vorheriger Tag",
+    "nextLabel": "Nächster Tag"
   },
   "share": {
     "imageAlt": "Stromfenster: Verlauf des Strompreises über einen Tag, mit dem günstigsten Zeitfenster markiert.",

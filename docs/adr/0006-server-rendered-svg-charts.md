@@ -40,3 +40,14 @@ What the charts need is small: a linear scale, round axis ticks, and a path for 
 - **Checked on the deployment (15 November 2026).** A request found a page rendered 27 minutes earlier: Vercel served it with `x-vercel-cache: STALE` and rendered a new one in the background. Half a minute later the same URL came from the cache with `HIT`, an age of 22 seconds and the new time in its footer.
 - **When the data API is down**, the server answers with 503, `no-store` and a page that says so, instead of caching an empty dashboard.
 - **Keyboard access to single values in a chart** is not there yet; the tables are the accessible route. That is part of the accessibility pass in Phase 5.
+
+## Addendum: new colours (2026-11-17)
+
+The visual redesign gave the charts new colours, taken from the site's own palette: coral for gas, pond blue for wind, sun yellow for solar. The six generation colours were checked again with the same validator, in stack order, against the panel colour of each mode:
+
+| Mode  | Panel     | Worst adjacent pair under colour-blind simulation    | Lightness band and chroma | Below 3:1 against the panel  |
+| ----- | --------- | ---------------------------------------------------- | ------------------------- | ---------------------------- |
+| Light | `#fbf8ef` | ΔE 8.8 (protanopia), gas next to biomass and water   | all six inside            | other (2.9:1), solar (2.2:1) |
+| Dark  | `#212621` | ΔE 8.4 (deuteranopia), gas next to biomass and water | all six inside            | none                         |
+
+As before, the legend names every group and the table holds the values, so no reading depends on telling two colours apart. The price and wind-and-solar lines are at least 3:1 against the panel in both modes.

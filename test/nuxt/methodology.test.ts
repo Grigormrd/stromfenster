@@ -104,11 +104,11 @@ describe("methodology page in both languages", () => {
     // The language is global in the app: check each page before mounting the next.
     const de = await german();
     expect(de.find(".back a").attributes("href")).toBe("/");
-    expect(de.find('footer a[hreflang="en-GB"]').attributes("href")).toBe("/en/methodology");
+    expect(de.find('nav a[hreflang="en-GB"]').attributes("href")).toBe("/en/methodology");
 
     const en = await english();
     expect(en.find(".back a").attributes("href")).toBe("/en");
-    expect(en.find('footer a[hreflang="de-DE"]').attributes("href")).toBe("/methodik");
+    expect(en.find('nav a[hreflang="de-DE"]').attributes("href")).toBe("/methodik");
   });
 
   it("credits the data source", async () => {

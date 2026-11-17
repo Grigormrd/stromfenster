@@ -24,8 +24,11 @@ const links = english
       home: "/en",
       yesterday: `/en/day/${yesterday}`,
       methodology: "/en/methodology",
+      // The other language's start page: the missing address has no counterpart.
+      other: "/",
     }
-  : { home: "/", yesterday: `/tag/${yesterday}`, methodology: "/methodik" };
+  : { home: "/", yesterday: `/tag/${yesterday}`, methodology: "/methodik", other: "/en" };
+const otherLanguage = english ? "de-DE" : "en-GB";
 
 useHead({
   htmlAttrs: { lang: english ? "en-GB" : "de-DE" },
@@ -36,12 +39,19 @@ useHead({
 
 <template>
   <main class="prose error-page">
-    <p class="secondary">{{ say("errors.code", { code: error.statusCode }) }}</p>
-    <h1>{{ title }}</h1>
-    <p class="lead secondary">
-      {{ say(notFound ? "errors.notFoundText" : "errors.otherText") }}
-    </p>
-    <ul>
+    <LandHeader :home-href="links.home" :nav-label="say('nav.label')">
+      <template #nav>
+        <a :href="links.other" :lang="otherLanguage" :hreflang="otherLanguage">{{
+          say("nav.switchLanguage")
+        }}</a>
+      </template>
+      <h1>{{ title }}</h1>
+      <p class="lead">
+        {{ say("errors.code", { code: error.statusCode }) }}:
+        {{ say(notFound ? "errors.notFoundText" : "errors.otherText") }}
+      </p>
+    </LandHeader>
+    <ul class="ways">
       <li>
         <a :href="links.home">{{ say("errors.home") }}</a>
       </li>
@@ -56,7 +66,34 @@ useHead({
 </template>
 
 <style scoped>
-.error-page {
-  padding-top: 4rem;
+/* The ways back, as outlined capsules on the water. */
+.ways {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.ways li + li {
+  margin-top: 0;
+}
+
+.ways a {
+  display: inline-block;
+  padding: 0.5rem 1.15rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .ways a:hover {
+    background: var(--ink);
+    color: var(--water);
+  }
 }
 </style>

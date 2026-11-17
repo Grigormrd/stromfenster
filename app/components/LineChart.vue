@@ -20,6 +20,10 @@ const props = defineProps<{
   windowLabel: string;
   /** CSS colour of the line. */
   color: string;
+  /** Fill of the best-window band and its capsule label; the line colour when not given. */
+  bandColor?: string;
+  /** Fill of the wash under the line; the line colour when not given. */
+  washColor?: string;
   /** Turns a value into axis and tooltip text. */
   format: (value: number) => string;
   /** Turns a value into a short axis label. */
@@ -39,7 +43,7 @@ const props = defineProps<{
 const { t } = useI18n();
 const formatters = useFormatters();
 
-const margin = { top: 34, right: 12, bottom: 26, left: 40 };
+const margin = { top: 42, right: 12, bottom: 26, left: 40 };
 const plot = computed(() => ({
   left: margin.left,
   right: props.width - margin.right,
@@ -102,14 +106,25 @@ const bands = computed(() =>
       // Keep the label inside the plot when the band is near an edge.
       const anchor =
         center < plot.value.left + 70 ? "start" : center > plot.value.right - 70 ? "end" : "middle";
-      const labelX = anchor === "start" ? left : anchor === "end" ? right : center;
+      const text = t("charts.bandLabel", { label: props.windowLabel, n: duration });
+      // The label is a capsule pinned to the band's top edge. Its width is
+      // estimated from the text, since the chart is drawn on the server.
+      const capsuleWidth = Math.round(text.length * 6.3 + 16);
+      const capsuleX =
+        anchor === "start"
+          ? left
+          : anchor === "end"
+            ? right - capsuleWidth
+            : center - capsuleWidth / 2;
       return {
         duration,
         left,
         width: right - left,
-        anchor,
-        labelX,
-        text: t("charts.bandLabel", { label: props.windowLabel, n: duration }),
+        anchor: "middle",
+        labelX: capsuleX + capsuleWidth / 2,
+        capsuleX,
+        capsuleWidth,
+        text,
       };
     }),
 );
@@ -224,13 +239,24 @@ const announcement = computed(() =>
           :y="plot.top"
           :width="band.width"
           :height="plot.bottom - plot.top"
-          :fill="color"
+          :fill="bandColor ?? color"
         />
-        <text :x="band.labelX" :y="plot.top - 6" :text-anchor="band.anchor">{{ band.text }}</text>
+        <rect
+          class="band-label"
+          :x="band.capsuleX"
+          :y="plot.top - 22"
+          :width="band.capsuleWidth"
+          height="18"
+          rx="9"
+          :fill="bandColor ?? color"
+        />
+        <text :x="band.labelX" :y="plot.top - 9.5" :text-anchor="band.anchor">
+          {{ band.text }}
+        </text>
       </g>
 
       <!-- The series: a wash under a 2px line -->
-      <path :d="area" :fill="color" class="wash" />
+      <path :d="area" :fill="washColor ?? color" class="wash" />
       <path :d="line" :stroke="color" class="line" />
 
       <!-- Now -->
@@ -268,9 +294,9 @@ const announcement = computed(() =>
 }
 
 svg:focus-visible {
-  outline: 2px solid var(--price);
+  outline: 3px solid var(--focus);
   outline-offset: 4px;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 svg {
@@ -283,7 +309,7 @@ svg {
 
 text {
   fill: var(--ink-secondary);
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -298,7 +324,7 @@ text {
 
 .day {
   fill: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .day-rule {
@@ -307,16 +333,27 @@ text {
 }
 
 .band rect {
-  opacity: 0.16;
+  opacity: 0.45;
+}
+
+@media (prefers-color-scheme: dark) {
+  .band rect {
+    opacity: 0.6;
+  }
+}
+
+.band rect.band-label {
+  opacity: 1;
 }
 
 .band text {
-  fill: var(--ink);
-  font-weight: 600;
+  fill: var(--capsule-ink);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .wash {
-  opacity: 0.1;
+  opacity: 0.2;
 }
 
 .line {
@@ -333,7 +370,7 @@ text {
 
 .now text {
   fill: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
   /* The label sits on the time axis; a halo keeps it apart from a tick below it. */
   paint-order: stroke;
   stroke: var(--surface);
@@ -356,10 +393,9 @@ text {
   transform: translateX(8px);
   display: grid;
   padding: 0.35rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
   background: var(--surface);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
   font-size: 0.8125rem;
   white-space: nowrap;
   pointer-events: none;

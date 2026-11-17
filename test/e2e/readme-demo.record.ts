@@ -141,7 +141,7 @@ test("record the README preview", async ({ browser }) => {
       ...["-t", seconds(showEnd - showStart)],
       "-filter_complex",
       [
-        "[0:v]fps=10,scale=880:-1:flags=lanczos,split[a][b]",
+        "[0:v]fps=8,scale=800:-1:flags=lanczos,split[a][b]",
         "[a]palettegen=max_colors=64:stats_mode=diff[p]",
         "[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
       ].join(";"),
