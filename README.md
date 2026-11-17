@@ -188,7 +188,7 @@ pnpm e2e   # starts the build against recorded data; needs Chromium: pnpm exec p
 
 ## Lighthouse
 
-Measured on 16 November 2026 on the deployed site, with Lighthouse in Chrome DevTools in its mobile and desktop modes. Each cell lists performance · accessibility · best practices · SEO. These measurements were taken before the visual redesign of 17 November 2026 (self-hosted typeface, new colours); they have not been repeated since.
+Measured on 16 November 2026 on the deployed site, with Lighthouse in Chrome DevTools in its mobile and desktop modes. Each cell lists performance · accessibility · best practices · SEO. Measured again on 17 November 2026, after the visual redesign (self-hosted typeface, new colours): the scores were the same in every cell.
 
 | Page                                                       | Phone                  | Desktop               |
 | ---------------------------------------------------------- | ---------------------- | --------------------- |
@@ -196,11 +196,11 @@ Measured on 16 November 2026 on the deployed site, with Lighthouse in Chrome Dev
 | [Methodology](https://stromfenster.vercel.app/methodik)    | 99 · 100 · 100 · 100 ¹ | 100 · 100 · 100 · 100 |
 | [Day page](https://stromfenster.vercel.app/tag/2026-11-15) | 98 · 100 · 100 · 100 ¹ | 100 · 100 · 100 · 100 |
 
-Largest Contentful Paint was 1.7 s for the start page on the phone, and 0.3 to 0.4 s on desktop.
+In the first measurement, Largest Contentful Paint was 1.7 s for the start page on the phone, and 0.3 to 0.4 s on desktop.
 
 The start page was measured in a private window. A first run in a profile with browser extensions scored 59 for performance on the phone and 96 for best practices: an extension made Vue report a hydration mismatch in the console. The same files, served from `localhost` where extensions do not run, hydrate without it.
 
-¹ Lighthouse reported that browser extensions affected this run.
+¹ In the first measurement, Lighthouse reported that browser extensions affected this run.
 
 ## What was hard
 
